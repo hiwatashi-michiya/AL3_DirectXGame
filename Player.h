@@ -2,6 +2,8 @@
 #include <Model.h>
 #include <WorldTransform.h>
 #include <ViewProjection.h>
+#include <Input.h>
+#include "PlayerBullet.h"
 
 class Player {
 public:
@@ -20,12 +22,19 @@ public:
 
 private:
 
+	//キーボード入力
+	Input* input_ = nullptr;
+
 	//ワールド変換データ
 	WorldTransform worldTransform_;
 	//モデル
 	Model* model_ = nullptr;
 	//テクスチャハンドル
 	uint32_t textureHandle_ = 0u;
+	//弾
+	PlayerBullet* bullet_ = nullptr;
+	//攻撃
+	void Attack();
 
 };
 
