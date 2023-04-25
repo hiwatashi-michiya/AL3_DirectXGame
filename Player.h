@@ -4,6 +4,7 @@
 #include <ViewProjection.h>
 #include <Input.h>
 #include "PlayerBullet.h"
+#include <list>
 
 class Player {
 public:
@@ -32,7 +33,7 @@ private:
 	//テクスチャハンドル
 	uint32_t textureHandle_ = 0u;
 	//弾
-	PlayerBullet* bullet_ = nullptr;
+	std::list<PlayerBullet*> bullets_;
 	//攻撃
 	void Attack();
 
