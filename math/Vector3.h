@@ -24,3 +24,6 @@ float Length(const Vector3& v);
 Vector3 Normalize(const Vector3& v);
 
 Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
+
+//ベクトル変換(スケールと回転)
+Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
