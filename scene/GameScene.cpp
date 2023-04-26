@@ -9,6 +9,7 @@ GameScene::~GameScene() {
 	delete model_;
 	delete player_;
 	delete debugCamera_;
+	delete enemy_;
 }
 
 void GameScene::Initialize() {
@@ -19,11 +20,16 @@ void GameScene::Initialize() {
 
 	viewProjection_.Initialize();
 	textureHandle_ = TextureManager::Load("mario.jpg");
+	enemyTextureHandle_ = TextureManager::Load("enemy.png");
 	model_ = Model::Create();
 	// 自キャラの生成
 	player_ = new Player();
 	// 自キャラの初期化
 	player_->Initialize(model_, textureHandle_);
+	//敵キャラの生成
+	enemy_ = new Enemy();
+	//敵キャラの初期化
+	enemy_->Initialize(model_, enemyTextureHandle_);
 	//デバッグカメラの生成
 	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
 	//軸方向表示の表示を有効にする
@@ -36,6 +42,9 @@ void GameScene::Initialize() {
 void GameScene::Update() { 
 	
 	player_->Update();
+	if (enemy_) {
+		enemy_->Update();
+	}
 
 #ifdef _DEBUG
 
@@ -97,6 +106,9 @@ void GameScene::Draw() {
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
 	player_->Draw(viewProjection_);
+	if (enemy_) {
+		enemy_->Draw(viewProjection_);
+	}
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
