@@ -3,6 +3,11 @@
 #include <WorldTransform.h>
 #include <ViewProjection.h>
 
+enum class Phase {
+	Approach, //接近
+	Leave, //離脱
+};
+
 class Enemy {
 public:
 	Enemy();
@@ -17,6 +22,12 @@ public:
 
 private:
 
+	//接近フェーズ
+	void PhaseApproach();
+
+	//離脱フェーズ
+	void PhaseLeave();
+
 	//ワールド変換データ
 	WorldTransform worldTransform_;
 
@@ -25,6 +36,9 @@ private:
 
 	//テクスチャハンドル
 	uint32_t textureHandle_ = 0u;
+
+	//フェーズ
+	Phase phase_ = Phase::Approach;
 
 };
 
