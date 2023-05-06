@@ -4,7 +4,14 @@
 
 Enemy::Enemy() {}
 
-Enemy::~Enemy() {}
+Enemy::~Enemy() {
+
+	//bulletの解放
+	for (EnemyBullet* bullet : bullets_) {
+		delete bullet;
+	}
+
+}
 
 void Enemy::Initialize(Model* model, uint32_t textureHandle) {
 
@@ -16,11 +23,22 @@ void Enemy::Initialize(Model* model, uint32_t textureHandle) {
 	//ワールド変換の初期化
 	worldTransform_.Initialize();
 	//初期座標設定
-	worldTransform_.translation_ = {0.0f, 5.0f, 50.0f};
+	worldTransform_.translation_ = {20.0f, 5.0f, 50.0f};
+
+	//接近フェーズ初期化
+	InitPhaseApproach();
 
 }
 
 void Enemy::Update() {
+
+	bullets_.remove_if([](EnemyBullet* bullet) {
+		if (bullet->isDead()) {
+			delete bullet;
+			return true;
+		}
+		return false;
+	});
 
 	switch (phase_) {
 	case Phase::Approach:
@@ -32,14 +50,42 @@ void Enemy::Update() {
 		break;
 	}
 
+	//発射タイマーカウントダウン
+	fireTimer_--;
+	//指定時間に達した
+	if (fireTimer_ == 0) {
+		//弾発射
+		Fire();
+		//発射タイマー初期化
+		fireTimer_ = kFireInterval;
+	}
+
+	for (EnemyBullet* bullet : bullets_) {
+		bullet->Update();
+	}
+
 	//行列の更新
 	worldTransform_.UpdateMatrix();
 
 	ImGui::Begin("Enemy state");
 	ImGui::Text(
-	    "Player Position\n x : %0.2f\n y : %0.2f\n z : %0.2f", worldTransform_.translation_.x,
-	    worldTransform_.translation_.y, worldTransform_.translation_.z);
+	    "Enemy Position\n x : %0.2f\n y : %0.2f\n z : %0.2f\nFireTimer\n %d", worldTransform_.translation_.x,
+	    worldTransform_.translation_.y, worldTransform_.translation_.z, fireTimer_);
 	ImGui::End();
+
+}
+
+void Enemy::Fire() {
+
+	//弾速
+	const float kBulletSpeed = 1.0f;
+	Vector3 velocity(0.0f, 0.0f, -kBulletSpeed);
+
+	//弾生成、初期化
+	EnemyBullet* newBullet = new EnemyBullet();
+	newBullet->Initialize(model_, worldTransform_.translation_, velocity);
+
+	bullets_.push_back(newBullet);
 
 }
 
@@ -60,6 +106,11 @@ void Enemy::PhaseApproach() {
 		phase_ = Phase::Leave;
 	}
 	
+}
+
+void Enemy::InitPhaseApproach() {
+	//発射タイマーを初期化
+	fireTimer_ = kFireInterval;
 }
 
 //離脱
@@ -84,5 +135,9 @@ void Enemy::Draw(ViewProjection viewProjection) {
 
 	// 3Dモデルを描画
 	model_->Draw(worldTransform_, viewProjection, textureHandle_);	
+
+	for (EnemyBullet* bullet : bullets_) {
+		bullet->Draw(viewProjection);
+	}
 
 }
