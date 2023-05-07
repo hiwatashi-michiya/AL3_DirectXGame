@@ -1,6 +1,7 @@
 #include <Enemy.h>
 #include <cassert>
 #include <ImGuiManager.h>
+#include "Player.h"
 
 Enemy::Enemy() {}
 
@@ -77,9 +78,18 @@ void Enemy::Update() {
 
 void Enemy::Fire() {
 
+	assert(player_);
+
 	//弾速
 	const float kBulletSpeed = 1.0f;
-	Vector3 velocity(0.0f, 0.0f, -kBulletSpeed);
+	Vector3 playerPos = player_->GetWorldPosition();
+	Vector3 enemyPos = worldTransform_.translation_;
+	Vector3 length = Subtract(enemyPos, playerPos);
+	Vector3 speed = Normalize(length);
+
+	Vector3 velocity(speed.x * -kBulletSpeed,
+		speed.y * -kBulletSpeed,
+		speed.z * -kBulletSpeed);
 
 	//弾生成、初期化
 	EnemyBullet* newBullet = new EnemyBullet();
@@ -140,4 +150,16 @@ void Enemy::Draw(ViewProjection viewProjection) {
 		bullet->Draw(viewProjection);
 	}
 
+}
+
+Vector3 Enemy::GetWorldPosition() {
+
+	// ワールド座標を入れる変数
+	Vector3 worldPos;
+	// ワールド行列の平行移動成分を取得
+	worldPos.x = worldTransform_.translation_.x;
+	worldPos.y = worldTransform_.translation_.y;
+	worldPos.z = worldTransform_.translation_.z;
+
+	return worldPos;
 }

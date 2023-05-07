@@ -10,6 +10,9 @@ enum class Phase {
 	Leave, //離脱
 };
 
+//自機クラスの前方宣言
+class Player;
+
 class Enemy {
 public:
 	Enemy();
@@ -27,6 +30,10 @@ public:
 	void Fire();
 	//発射間隔
 	static const int kFireInterval = 60;
+
+	void SetPlayer(Player* player) { player_ = player; }
+
+	Vector3 GetWorldPosition();
 
 private:
 
@@ -53,6 +60,9 @@ private:
 
 	//フェーズ
 	Phase phase_ = Phase::Approach;
+
+	//自キャラ
+	Player* player_ = nullptr;
 
 };
 

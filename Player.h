@@ -20,6 +20,8 @@ public:
 	//描画
 	void Draw(ViewProjection viewProjection);
 
+	Vector3 GetWorldPosition();
+
 
 private:
 
