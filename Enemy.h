@@ -40,6 +40,12 @@ private:
 	//フェーズ
 	Phase phase_ = Phase::Approach;
 
+	//メンバ関数ポインタ
+	void (Enemy::*pPhase)();
+
+	//メンバ関数ポインタのテーブル
+	static void (Enemy::*pPhaseTable[])();
+
 };
 
 

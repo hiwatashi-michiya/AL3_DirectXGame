@@ -17,12 +17,20 @@ void Enemy::Initialize(Model* model, uint32_t textureHandle) {
 	worldTransform_.Initialize();
 	//初期座標設定
 	worldTransform_.translation_ = {0.0f, 5.0f, 50.0f};
+	pPhase = &Enemy::PhaseApproach;
 
 }
 
+void (Enemy::*Enemy::pPhaseTable[])() = {
+	&Enemy::PhaseApproach,
+	&Enemy::PhaseLeave
+};
+
 void Enemy::Update() {
 
-	switch (phase_) {
+	(this->*pPhaseTable[static_cast<size_t>(phase_)])();
+
+	/*switch (phase_) {
 	case Phase::Approach:
 	default:
 		PhaseApproach();
@@ -30,7 +38,7 @@ void Enemy::Update() {
 	case Phase::Leave:
 		PhaseLeave();
 		break;
-	}
+	}*/
 
 	//行列の更新
 	worldTransform_.UpdateMatrix();
