@@ -8,6 +8,8 @@ enum class Phase {
 	Leave, //離脱
 };
 
+class BaseEnemyState;
+
 class Enemy {
 public:
 	Enemy();
@@ -19,14 +21,14 @@ public:
 	void Update();
 	//描画
 	void Draw(ViewProjection viewProjection);
+	//座標を変更する関数
+	void Move(const Vector3& velocity);
+	//座標のゲッター
+	Vector3 GetPosition();
+	//状態遷移
+	void ChangeState(BaseEnemyState* state);
 
 private:
-
-	//接近フェーズ
-	void PhaseApproach();
-
-	//離脱フェーズ
-	void PhaseLeave();
 
 	//ワールド変換データ
 	WorldTransform worldTransform_;
@@ -38,14 +40,38 @@ private:
 	uint32_t textureHandle_ = 0u;
 
 	//フェーズ
-	Phase phase_ = Phase::Approach;
+	BaseEnemyState* state_;
 
-	//メンバ関数ポインタ
-	void (Enemy::*pPhase)();
+};
 
-	//メンバ関数ポインタのテーブル
-	static void (Enemy::*pPhaseTable[])();
+class BaseEnemyState {
+public:
+	BaseEnemyState();
+	~BaseEnemyState();
 
+	virtual void Update();
+	virtual void SetEnemy(Enemy* enemy) { enemy_ = enemy; }
+
+protected:
+	Enemy* enemy_;
+};
+
+class EnemyStateApproach : public BaseEnemyState {
+public:
+	
+	void Update();
+	void SetEnemy(Enemy* enemy) { enemy_ = enemy; }
+
+private:
+};
+
+class EnemyStateLeave : public BaseEnemyState {
+public:
+	
+	void Update();
+	void SetEnemy(Enemy* enemy) { enemy_ = enemy; }
+
+private:
 };
 
 
