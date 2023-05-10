@@ -10,6 +10,8 @@ enum class Phase {
 	Leave, //離脱
 };
 
+class TimedCall;
+
 class Enemy {
 public:
 	Enemy();
@@ -25,6 +27,8 @@ public:
 	void Draw(ViewProjection viewProjection);
 	//弾発射
 	void Fire();
+	//弾を発射してタイマーをリセットするコールバック関数
+	void LoopFire();
 	//発射間隔
 	static const int kFireInterval = 60;
 
@@ -44,6 +48,9 @@ private:
 
 	//弾
 	std::list<EnemyBullet*> bullets_;
+
+	//時限発動のリスト
+	std::list<TimedCall*> timedCalls_;
 
 	//発射タイマー
 	int32_t fireTimer_ = 0;

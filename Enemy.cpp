@@ -1,10 +1,16 @@
 #include <Enemy.h>
 #include <cassert>
 #include <ImGuiManager.h>
+#include "TimedCall.h"
 
 Enemy::Enemy() {}
 
 Enemy::~Enemy() {
+
+	//timedCallの解放
+	for (TimedCall* timedCall : timedCalls_) {
+		delete timedCall;
+	}
 
 	//bulletの解放
 	for (EnemyBullet* bullet : bullets_) {
@@ -32,6 +38,14 @@ void Enemy::Initialize(Model* model, uint32_t textureHandle) {
 
 void Enemy::Update() {
 
+	timedCalls_.remove_if([](TimedCall* timedCall) {
+		if (timedCall->isFinished()) {
+			delete timedCall;
+			return true;
+		}
+		return false;
+	});
+
 	bullets_.remove_if([](EnemyBullet* bullet) {
 		if (bullet->isDead()) {
 			delete bullet;
@@ -50,14 +64,8 @@ void Enemy::Update() {
 		break;
 	}
 
-	//発射タイマーカウントダウン
-	fireTimer_--;
-	//指定時間に達した
-	if (fireTimer_ == 0) {
-		//弾発射
-		Fire();
-		//発射タイマー初期化
-		fireTimer_ = kFireInterval;
+	for (TimedCall* timedCall : timedCalls_) {
+		timedCall->Update();
 	}
 
 	for (EnemyBullet* bullet : bullets_) {
@@ -89,6 +97,17 @@ void Enemy::Fire() {
 
 }
 
+void Enemy::LoopFire() {
+
+	//弾発射
+	Fire();
+
+	//発射タイマーをセットする
+	timedCalls_.push_back(
+		new TimedCall(std::bind(&Enemy::LoopFire, this), fireTimer_));
+
+}
+
 //接近
 void Enemy::PhaseApproach() {
 
@@ -111,6 +130,8 @@ void Enemy::PhaseApproach() {
 void Enemy::InitPhaseApproach() {
 	//発射タイマーを初期化
 	fireTimer_ = kFireInterval;
+	//発射タイマーをセットする
+	timedCalls_.push_back(new TimedCall(std::bind(&Enemy::LoopFire, this), fireTimer_));
 }
 
 //離脱
