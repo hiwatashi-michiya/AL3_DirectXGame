@@ -122,6 +122,14 @@ void Enemy::PhaseApproach() {
 
 	//Z座標が0.0f未満になったら離脱フェーズ移行
 	if (worldTransform_.translation_.z < 0.0f) {
+		//未完了timedCallのクリア
+		timedCalls_.remove_if([](TimedCall* timedCall) {
+			if (timedCall->isFinished() == false) {
+				delete timedCall;
+				return true;
+			}
+			return false;
+		});
 		phase_ = Phase::Leave;
 	}
 	
