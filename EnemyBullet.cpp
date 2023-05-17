@@ -1,5 +1,6 @@
 #include "EnemyBullet.h"
 #include <cassert>
+#include "Player.h"
 
 EnemyBullet::EnemyBullet() {}
 
@@ -30,6 +31,24 @@ void EnemyBullet::Initialize(Model* model, const Vector3& position, const Vector
 
 void EnemyBullet::Update() {
 
+	//敵弾から自キャラへのベクトルを計算
+	Vector3 toPlayer = Subtract(player_->GetWorldPosition(), worldTransform_.translation_);
+
+	//ベクトルを正規化する
+	Normalize(toPlayer);
+	Normalize(velocity_);
+	//球面線形補間により、今の速度と自キャラへのベクトルを内挿し、新たな速度とする
+	velocity_ = Slerp(velocity_, toPlayer, 0.02f);
+	velocity_.x *= 1.0f;
+	velocity_.y *= 1.0f;
+	velocity_.z *= 1.0f;
+	// Y軸周り角度
+	worldTransform_.rotation_.y = float(std::atan2(double(velocity_.x), double(velocity_.z)));
+	Matrix4x4 rotateYMatrix = MakeRotateYMatrix(-worldTransform_.rotation_.y);
+	Vector3 velocityZ = TransformNormal(velocity_, rotateYMatrix);
+	// X軸周り角度
+	worldTransform_.rotation_.x = float(std::atan2(double(-velocityZ.y), double(velocityZ.z)));
+	
 	worldTransform_.translation_ = Add(worldTransform_.translation_, velocity_);
 
 	worldTransform_.UpdateMatrix();

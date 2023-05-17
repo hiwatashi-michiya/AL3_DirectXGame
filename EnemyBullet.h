@@ -3,6 +3,8 @@
 #include <WorldTransform.h>
 #include <ViewProjection.h>
 
+class Player;
+
 class EnemyBullet {
 public:
 	EnemyBullet();
@@ -15,6 +17,9 @@ public:
 	void Draw(const ViewProjection& viewProjection);
 
 	bool isDead() const { return isDead_; }
+
+	//プレイヤーポインタのセット
+	void SetPlayer(Player* player) { player_ = player; }
 
 	static const int32_t kLifeTime = 60 * 5;
 
@@ -31,6 +36,9 @@ private:
 	int32_t deathTimer_ = kLifeTime;
 
 	bool isDead_ = false;
+
+	//プレイヤーのポインタ
+	Player* player_;
 
 };
 

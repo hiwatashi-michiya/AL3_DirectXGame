@@ -2,6 +2,7 @@
 #include <Vector3.h>
 #include <cassert>
 #include <math.h>
+#include <iostream>
 
 // 加算
 Vector3 Add(const Vector3& v1, const Vector3& v2) {
@@ -108,5 +109,55 @@ Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
 	};
 
 	return result;
+
+}
+
+//線形補間
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
+
+	t = Clamp(t, 0, 1.0f);
+
+	Vector3 p = Vector3(
+		v1.x - t * (v2.x - v1.x),
+		v1.y - t * (v2.y - v1.y),
+		v1.z - t * (v2.z - v1.z)
+	);
+
+	return p;
+
+}
+
+//球面線形補間
+Vector3 Slerp(const Vector3& v1, const Vector3& v2, float t) {
+
+	t = Clamp(t, 0, 1.0f);
+
+	float theta = std::acos(Clamp(Dot(v1, v2),0,1.0f) / (Length(v1) * Length(v2)));
+
+	float s = (1.0f - t) * Length(v1) + t * Length(v2);
+
+	Vector3 p = Vector3(
+	    s * (std::sin(1 - t) / std::sin(theta) * v1.x / Length(v1) +
+	         std::sin(t) / std::sin(theta) * v2.x / Length(v2)),
+	    s * (std::sin(1 - t) / std::sin(theta) * v1.y / Length(v1) +
+	         std::sin(t) / std::sin(theta) * v2.y / Length(v2)),
+	    s * (std::sin(1 - t) / std::sin(theta) * v1.z / Length(v1) +
+	         std::sin(t) / std::sin(theta) * v2.z / Length(v2)) );
+
+	return p;
+
+}
+
+float Clamp(float x, float min, float max) {
+
+	if (x > max) {
+		return max;
+	}
+
+	if (x < min) {
+		return min;
+	}
+
+	return x;
 
 }
