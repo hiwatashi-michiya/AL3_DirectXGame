@@ -132,19 +132,30 @@ Vector3 Slerp(const Vector3& v1, const Vector3& v2, float t) {
 
 	t = Clamp(t, 0, 1.0f);
 
-	float theta = std::acos(Clamp(Dot(v1, v2),0,1.0f) / (Length(v1) * Length(v2)));
+	float dot = Dot(v1, v2);
+	float length = Length(v1) * Length(v2);
+	float theta = std::acos(Clamp(dot / length, 0, 1.0f));
+	//float theta = std::acos(Clamp(Dot(v1, v2) / (Length(v1) * Length(v2)), 0,1.0f));
 
 	float s = (1.0f - t) * Length(v1) + t * Length(v2);
 
-	Vector3 p = Vector3(
-	    s * (std::sin(1 - t) / std::sin(theta) * v1.x / Length(v1) +
-	         std::sin(t) / std::sin(theta) * v2.x / Length(v2)),
-	    s * (std::sin(1 - t) / std::sin(theta) * v1.y / Length(v1) +
-	         std::sin(t) / std::sin(theta) * v2.y / Length(v2)),
-	    s * (std::sin(1 - t) / std::sin(theta) * v1.z / Length(v1) +
-	         std::sin(t) / std::sin(theta) * v2.z / Length(v2)) );
+	float e = 1.0e-4f;
 
-	return p;
+	if (theta >= e) {
+
+		Vector3 p = Vector3(
+		    s * (std::sin((1 - t) * theta) / std::sin(theta) * v1.x / Length(v1) +
+		         std::sin(t * theta) / std::sin(theta) * v2.x / Length(v2)),
+		    s * (std::sin((1 - t) * theta) / std::sin(theta) * v1.y / Length(v1) +
+		         std::sin(t * theta) / std::sin(theta) * v2.y / Length(v2)),
+		    s * (std::sin((1 - t) * theta) / std::sin(theta) * v1.z / Length(v1) +
+		         std::sin(t * theta) / std::sin(theta) * v2.z / Length(v2)));
+
+		return p;
+
+	}
+
+	return v2;
 
 }
 

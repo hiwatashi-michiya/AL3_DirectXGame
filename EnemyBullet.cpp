@@ -6,6 +6,8 @@ EnemyBullet::EnemyBullet() {}
 
 EnemyBullet::~EnemyBullet() {}
 
+static int number = 0;
+
 void EnemyBullet::Initialize(Model* model, const Vector3& position, const Vector3& velocity) {
 
 	assert(model);
@@ -26,7 +28,8 @@ void EnemyBullet::Initialize(Model* model, const Vector3& position, const Vector
 	//X軸周り角度
 	worldTransform_.rotation_.x = float(std::atan2(double(-velocityZ.y), double(velocityZ.z)));
 
-
+	
+	number_ = number++;
 }
 
 void EnemyBullet::Update() {
@@ -34,11 +37,19 @@ void EnemyBullet::Update() {
 	//敵弾から自キャラへのベクトルを計算
 	Vector3 toPlayer = Subtract(player_->GetWorldPosition(), worldTransform_.translation_);
 
+	if (number_ == 2) {
+		float length = Length(toPlayer);
+		if (length <= 14.0f) {
+		static int a = 0;
+		a+= (int)length;
+		}
+	}
+
 	//ベクトルを正規化する
-	Normalize(toPlayer);
-	Normalize(velocity_);
+	toPlayer = Normalize(toPlayer);
+	velocity_ = Normalize(velocity_);
 	//球面線形補間により、今の速度と自キャラへのベクトルを内挿し、新たな速度とする
-	velocity_ = Slerp(velocity_, toPlayer, 0.02f);
+	velocity_ = Slerp(velocity_, toPlayer, 0.05f);
 	velocity_.x *= 1.0f;
 	velocity_.y *= 1.0f;
 	velocity_.z *= 1.0f;

@@ -40,6 +40,7 @@ private:
 	//プレイヤーのポインタ
 	Player* player_;
 
+	int number_;
 };
 
 
