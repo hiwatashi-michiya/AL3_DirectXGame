@@ -110,3 +110,23 @@ Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
 	return result;
 
 }
+
+//2点間の距離を求める
+float Distance(const Vector3& v1, const Vector3& v2) {
+
+	Vector3 v = Subtract(v2, v1);
+	float result = Dot(v, v);
+
+	return result;
+
+}
+
+float HitRadius(float r1, float r2) {
+
+	float totalRadius = r1 + r2;
+
+	float result = totalRadius * totalRadius;
+
+	return result;
+
+}

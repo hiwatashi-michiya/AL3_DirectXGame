@@ -22,8 +22,19 @@ public:
 
 	Vector3 GetWorldPosition();
 
+	// 衝突を検出したら呼び出されるコールバック関数
+	void OnCollision();
+
+	//弾リストを取得
+	const std::list<PlayerBullet*>& GetBullets() { return bullets_; }
+
+	//半径の取得
+	float GetRadius() { return radius_; }
 
 private:
+
+	//半径
+	float radius_ = 1.0f;
 
 	//キーボード入力
 	Input* input_ = nullptr;

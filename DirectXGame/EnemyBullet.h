@@ -18,7 +18,18 @@ public:
 
 	static const int32_t kLifeTime = 60 * 5;
 
+	Vector3 GetWorldPosition();
+
+	// 衝突を検出したら呼び出されるコールバック関数
+	void OnCollision();
+
+	// 半径の取得
+	float GetRadius() { return radius_; }
+
 private:
+
+	// 半径
+	float radius_ = 1.0f;
 
 	WorldTransform worldTransform_;
 
