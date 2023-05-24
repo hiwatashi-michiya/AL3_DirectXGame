@@ -10,6 +10,8 @@ GameScene::~GameScene() {
 	delete player_;
 	delete debugCamera_;
 	delete enemy_;
+	delete skydome_;
+	delete modelSkydome_;
 }
 
 void GameScene::Initialize() {
@@ -18,10 +20,14 @@ void GameScene::Initialize() {
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
 
+	//ビュープロジェクションの初期化
+	viewProjection_.farZ = 2000.0f;
 	viewProjection_.Initialize();
 	textureHandle_ = TextureManager::Load("mario.jpg");
 	enemyTextureHandle_ = TextureManager::Load("enemy.png");
 	model_ = Model::Create();
+	//3Dモデルの生成
+	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
 	// 自キャラの生成
 	player_ = new Player();
 	// 自キャラの初期化
@@ -32,8 +38,13 @@ void GameScene::Initialize() {
 	enemy_->Initialize(model_, enemyTextureHandle_);
 	//敵キャラに自キャラのアドレスを渡す
 	enemy_->SetPlayer(player_);
+	//天球の生成
+	skydome_ = new Skydome();
+	//天球の初期化
+	skydome_->Initialize(modelSkydome_);
 	//デバッグカメラの生成
 	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
+	debugCamera_->SetFarZ(2000.0f);
 	//軸方向表示の表示を有効にする
 	AxisIndicator::GetInstance()->SetVisible(true);
 	//軸方向表示が参照するビュープロジェクションを指定する(アドレス渡し)
@@ -43,6 +54,8 @@ void GameScene::Initialize() {
 
 void GameScene::Update() { 
 	
+	skydome_->Update();
+
 	player_->Update();
 	if (enemy_) {
 		enemy_->Update();
@@ -109,6 +122,9 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
+
+	skydome_->Draw(viewProjection_);
+
 	player_->Draw(viewProjection_);
 	if (enemy_) {
 		enemy_->Draw(viewProjection_);
