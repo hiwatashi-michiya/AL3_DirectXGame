@@ -12,7 +12,7 @@ public:
 	~Player();
 
 	//初期化
-	void Initialize(Model* model, uint32_t textureHandle);
+	void Initialize(Model* model, uint32_t textureHandle, Vector3 position);
 
 	//更新
 	void Update();
@@ -30,6 +30,9 @@ public:
 
 	//半径の取得
 	float GetRadius() { return radius_; }
+
+	//親となるワールドトランスフォームをセット
+	void SetParent(const WorldTransform* parent);
 
 private:
 

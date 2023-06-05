@@ -11,7 +11,7 @@ Player::~Player() {
 	}
 }
 
-void Player::Initialize(Model* model, uint32_t textureHandle) {
+void Player::Initialize(Model* model, uint32_t textureHandle, Vector3 position) {
 
 	//NULLポインタチェック
 	assert(model);
@@ -19,6 +19,7 @@ void Player::Initialize(Model* model, uint32_t textureHandle) {
 	//メンバ変数に記録
 	model_ = model;
 	textureHandle_ = textureHandle;
+	worldTransform_.translation_ = position;
 	//ワールド変換の初期化
 	worldTransform_.Initialize();
 	//シングルトンインスタンスを取得する
@@ -132,9 +133,14 @@ void Player::Attack() {
 		//速度ベクトルを自機の向きに合わせて回転させる
 		velocity = TransformNormal(velocity, worldTransform_.matWorld_);
 
+		Vector3 worldPos(
+		    worldTransform_.matWorld_.m[3][0], 
+			worldTransform_.matWorld_.m[3][1],
+		    worldTransform_.matWorld_.m[3][2]);
+
 		//弾を生成し、初期化
 		PlayerBullet* newBullet = new PlayerBullet();
-		newBullet->Initialize(model_, worldTransform_.translation_, velocity);
+		newBullet->Initialize(model_, worldPos, velocity);
 
 		//弾を登録する
 		bullets_.push_back(newBullet);
@@ -148,9 +154,9 @@ Vector3 Player::GetWorldPosition() {
 	//ワールド座標を入れる変数
 	Vector3 worldPos;
 	//ワールド行列の平行移動成分を取得
-	worldPos.x = worldTransform_.translation_.x;
-	worldPos.y = worldTransform_.translation_.y;
-	worldPos.z = worldTransform_.translation_.z;
+	worldPos.x = worldTransform_.matWorld_.m[3][0];
+	worldPos.y = worldTransform_.matWorld_.m[3][1];
+	worldPos.z = worldTransform_.matWorld_.m[3][2];
 
 	return worldPos;
 
@@ -158,4 +164,9 @@ Vector3 Player::GetWorldPosition() {
 
 void Player::OnCollision() {
 
+}
+
+void Player::SetParent(const WorldTransform* parent) {
+	//親子関係を結ぶ
+	worldTransform_.parent_ = parent;
 }

@@ -12,6 +12,7 @@ GameScene::~GameScene() {
 	delete enemy_;
 	delete skydome_;
 	delete modelSkydome_;
+	delete railCamera_;
 }
 
 void GameScene::Initialize() {
@@ -21,17 +22,23 @@ void GameScene::Initialize() {
 	audio_ = Audio::GetInstance();
 
 	//ビュープロジェクションの初期化
-	viewProjection_.farZ = 2000.0f;
+	viewProjection_.farZ = 2200.0f;
 	viewProjection_.Initialize();
 	textureHandle_ = TextureManager::Load("mario.jpg");
 	enemyTextureHandle_ = TextureManager::Load("enemy.png");
 	model_ = Model::Create();
 	//3Dモデルの生成
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
+	// レールカメラの初期化
+	railCamera_ = new RailCamera();
+	railCamera_->Initialize(viewProjection_.translation_, viewProjection_.rotation_);
 	// 自キャラの生成
 	player_ = new Player();
+	Vector3 playerPosition(0, 0, 50);
 	// 自キャラの初期化
-	player_->Initialize(model_, textureHandle_);
+	player_->Initialize(model_, textureHandle_, playerPosition);
+	//自キャラとレールカメラの親子関係を結ぶ
+	player_->SetParent(&railCamera_->GetWorldTransform());
 	//敵キャラの生成
 	enemy_ = new Enemy();
 	//敵キャラの初期化
@@ -44,7 +51,7 @@ void GameScene::Initialize() {
 	skydome_->Initialize(modelSkydome_);
 	//デバッグカメラの生成
 	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
-	debugCamera_->SetFarZ(2000.0f);
+	debugCamera_->SetFarZ(2200.0f);
 	//軸方向表示の表示を有効にする
 	AxisIndicator::GetInstance()->SetVisible(true);
 	//軸方向表示が参照するビュープロジェクションを指定する(アドレス渡し)
@@ -54,6 +61,8 @@ void GameScene::Initialize() {
 
 void GameScene::Update() { 
 	
+	railCamera_->Update();
+
 	skydome_->Update();
 
 	player_->Update();
@@ -90,8 +99,10 @@ void GameScene::Update() {
 		viewProjection_.TransferMatrix();
 	}
 	else {
+		viewProjection_.matView = railCamera_->GetViewProjection().matView;
+		viewProjection_.matProjection = railCamera_->GetViewProjection().matProjection;
 		//ビュープロジェクション行列の更新と転送
-		viewProjection_.UpdateMatrix();
+		viewProjection_.TransferMatrix();
 	}
 
 }
