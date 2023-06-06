@@ -2,19 +2,15 @@
 #include <cassert>
 #include <ImGuiManager.h>
 #include "Player.h"
+#include "GameScene.h"
 
 Enemy::Enemy() {}
 
 Enemy::~Enemy() {
 
-	//bulletの解放
-	for (EnemyBullet* bullet : bullets_) {
-		delete bullet;
-	}
-
 }
 
-void Enemy::Initialize(Model* model, uint32_t textureHandle) {
+void Enemy::Initialize(Model* model, uint32_t textureHandle, GameScene* gameScene) {
 
 	assert(model);
 	assert(textureHandle);
@@ -23,23 +19,14 @@ void Enemy::Initialize(Model* model, uint32_t textureHandle) {
 	textureHandle_ = textureHandle;
 	//ワールド変換の初期化
 	worldTransform_.Initialize();
-	//初期座標設定
-	worldTransform_.translation_ = {20.0f, 5.0f, 50.0f};
-
+	//ゲームシーンのセット
+	SetGameScene(gameScene);
 	//接近フェーズ初期化
 	InitPhaseApproach();
 
 }
 
 void Enemy::Update() {
-
-	bullets_.remove_if([](EnemyBullet* bullet) {
-		if (bullet->isDead()) {
-			delete bullet;
-			return true;
-		}
-		return false;
-	});
 
 	switch (phase_) {
 	case Phase::Approach:
@@ -59,10 +46,6 @@ void Enemy::Update() {
 		Fire();
 		//発射タイマー初期化
 		fireTimer_ = kFireInterval;
-	}
-
-	for (EnemyBullet* bullet : bullets_) {
-		bullet->Update();
 	}
 
 	//行列の更新
@@ -95,7 +78,7 @@ void Enemy::Fire() {
 	EnemyBullet* newBullet = new EnemyBullet();
 	newBullet->Initialize(model_, worldTransform_.translation_, velocity);
 
-	bullets_.push_back(newBullet);
+	gameScene_->AddEnemyBullet(newBullet);
 
 }
 
@@ -103,7 +86,7 @@ void Enemy::Fire() {
 void Enemy::PhaseApproach() {
 
 	// 敵の移動速さ
-	const float kEnemySpeed = -0.2f;
+	const float kEnemySpeed = -0.05f;
 
 	// 敵の移動ベクトル
 	Vector3 move = {0, 0, kEnemySpeed};
@@ -127,7 +110,7 @@ void Enemy::InitPhaseApproach() {
 void Enemy::PhaseLeave() {
 
 	// 敵の移動速さ
-	const float kEnemySpeed = -0.2f;
+	const float kEnemySpeed = -0.05f;
 
 	// 敵の移動ベクトル
 	Vector3 move = {kEnemySpeed, -kEnemySpeed, kEnemySpeed};
@@ -146,10 +129,6 @@ void Enemy::Draw(ViewProjection viewProjection) {
 	// 3Dモデルを描画
 	model_->Draw(worldTransform_, viewProjection, textureHandle_);	
 
-	for (EnemyBullet* bullet : bullets_) {
-		bullet->Draw(viewProjection);
-	}
-
 }
 
 Vector3 Enemy::GetWorldPosition() {
@@ -157,13 +136,17 @@ Vector3 Enemy::GetWorldPosition() {
 	// ワールド座標を入れる変数
 	Vector3 worldPos;
 	// ワールド行列の平行移動成分を取得
-	worldPos.x = worldTransform_.translation_.x;
-	worldPos.y = worldTransform_.translation_.y;
-	worldPos.z = worldTransform_.translation_.z;
+	worldPos.x = worldTransform_.matWorld_.m[3][0];
+	worldPos.y = worldTransform_.matWorld_.m[3][1];
+	worldPos.z = worldTransform_.matWorld_.m[3][2];
 
 	return worldPos;
 }
 
 void Enemy::OnCollision() {
 
+}
+
+void Enemy::SetStartPosition(Vector3 position) {
+	worldTransform_.translation_ = position;
 }

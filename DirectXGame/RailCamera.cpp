@@ -18,8 +18,8 @@ void RailCamera::Initialize(const Vector3& transform,const Vector3& radian) {
 
 void RailCamera::Update() {
 
-	Vector3 move{0.0f, 0.0f, -0.1f};
-	Vector3 rotate{0.0f, 0.001f, 0.0f};
+	Vector3 move{0.0f, 0.0f, 0.1f};
+	Vector3 rotate{0.0f, 0.0f, 0.0f};
 
 	worldTransform_.translation_ = Add(worldTransform_.translation_, move);
 	worldTransform_.rotation_ = Add(worldTransform_.rotation_, rotate);
