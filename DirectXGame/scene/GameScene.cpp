@@ -42,6 +42,8 @@ void GameScene::Initialize() {
 	// 自キャラの生成
 	player_ = new Player();
 	Vector3 playerPosition(0, 0, 50);
+	// レティクルのテクスチャ
+	TextureManager::Load("reticle.png");
 	// 自キャラの初期化
 	player_->Initialize(model_, textureHandle_, playerPosition);
 	//自キャラとレールカメラの親子関係を結ぶ
@@ -86,7 +88,7 @@ void GameScene::Update() {
 
 	skydome_->Update();
 
-	player_->Update();
+	player_->Update(viewProjection_);
 
 	for (Enemy* enemy : enemies_) {
 		enemy->Update();
@@ -183,6 +185,8 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに前景スプライトの描画処理を追加できる
 	/// </summary>
+
+	player_->DrawUI();
 
 	// スプライト描画後処理
 	Sprite::PostDraw();

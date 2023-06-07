@@ -5,6 +5,7 @@
 #include <Input.h>
 #include "PlayerBullet.h"
 #include <list>
+#include <Sprite.h>
 
 class Player {
 public:
@@ -15,10 +16,15 @@ public:
 	void Initialize(Model* model, uint32_t textureHandle, Vector3 position);
 
 	//更新
-	void Update();
+	void Update(ViewProjection viewProjection);
 
 	//描画
 	void Draw(ViewProjection viewProjection);
+
+	/// <summary>
+	/// UI描画
+	/// </summary>
+	void DrawUI();
 
 	Vector3 GetWorldPosition();
 
@@ -52,6 +58,15 @@ private:
 	std::list<PlayerBullet*> bullets_;
 	//攻撃
 	void Attack();
+
+	//攻撃のクールタイム
+	uint32_t coolTimeAttack_ = 0;
+
+	//3Dレティクル用ワールドトランスフォーム
+	WorldTransform worldTransform3DReticle_;
+
+	//2Dレティクル用スプライト
+	Sprite* sprite2DReticle_ = nullptr;
 
 };
 
