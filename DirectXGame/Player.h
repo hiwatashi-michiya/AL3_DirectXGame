@@ -68,5 +68,8 @@ private:
 	//2Dレティクル用スプライト
 	Sprite* sprite2DReticle_ = nullptr;
 
+	//3Dレティクル処理関数
+	void Set3DReticle(ViewProjection viewProjection);
+
 };
 
