@@ -88,6 +88,9 @@ private:
 	//ゲームシーン
 	GameScene* gameScene_ = nullptr;
 
+	//当たったかどうか
+	bool isHit_ = false;
+
 };
 
 

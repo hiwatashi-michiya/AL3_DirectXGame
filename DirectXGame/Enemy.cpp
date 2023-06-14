@@ -28,6 +28,8 @@ void Enemy::Initialize(Model* model, uint32_t textureHandle, GameScene* gameScen
 
 void Enemy::Update() {
 
+	isHit_ = false;
+
 	switch (phase_) {
 	case Phase::Approach:
 	default:
@@ -94,8 +96,8 @@ void Enemy::PhaseApproach() {
 	// 座標の更新
 	worldTransform_.translation_ = Add(worldTransform_.translation_, move);
 
-	//Z座標が0.0f未満になったら離脱フェーズ移行
-	if (worldTransform_.translation_.z < 0.0f) {
+	//自機とのZ距離が20.0f未満になったら離脱フェーズ移行
+	if (fabsf(GetWorldPosition().z - player_->GetWorldPosition().z) < 10.0f) {
 		phase_ = Phase::Leave;
 	}
 	
@@ -113,12 +115,10 @@ void Enemy::PhaseLeave() {
 	const float kEnemySpeed = -0.05f;
 
 	// 敵の移動ベクトル
-	Vector3 move = {kEnemySpeed, -kEnemySpeed, kEnemySpeed};
+	Vector3 move = {kEnemySpeed, -kEnemySpeed, -kEnemySpeed};
 
-	// 座標の更新。全ての座標が規定値に達したら止める
-	if (worldTransform_.translation_.x > -100.0f ||
-		worldTransform_.translation_.y < 100.0f ||
-		worldTransform_.translation_.z > -100.0f) {
+	// 座標の更新。X座標が規定値に達したら止める
+	if (worldTransform_.translation_.x > -100.0f) {
 		worldTransform_.translation_ = Add(worldTransform_.translation_, move);
 	}
 
@@ -127,8 +127,10 @@ void Enemy::PhaseLeave() {
 void Enemy::Draw(ViewProjection viewProjection) {
 
 	// 3Dモデルを描画
-	model_->Draw(worldTransform_, viewProjection, textureHandle_);	
-
+	if (isHit_ == false) {
+		model_->Draw(worldTransform_, viewProjection, textureHandle_);	
+	}
+	
 }
 
 Vector3 Enemy::GetWorldPosition() {
@@ -144,7 +146,7 @@ Vector3 Enemy::GetWorldPosition() {
 }
 
 void Enemy::OnCollision() {
-
+	isHit_ = true;
 }
 
 void Enemy::SetStartPosition(Vector3 position) {
