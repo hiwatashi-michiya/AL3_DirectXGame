@@ -4,6 +4,7 @@
 #include <ViewProjection.h>
 #include "EnemyBullet.h"
 #include <list>
+#include "Collider.h"
 
 enum class Phase {
 	Approach, //接近
@@ -13,7 +14,7 @@ enum class Phase {
 //自機クラスの前方宣言
 class Player;
 
-class Enemy {
+class Enemy : public Collider {
 public:
 	Enemy();
 	~Enemy();
@@ -33,10 +34,10 @@ public:
 
 	void SetPlayer(Player* player) { player_ = player; }
 
-	Vector3 GetWorldPosition();
+	Vector3 GetWorldPosition() override;
 
 	// 衝突を検出したら呼び出されるコールバック関数
-	void OnCollision();
+	void OnCollision() override;
 
 	// 弾リストを取得
 	const std::list<EnemyBullet*>& GetBullets() { return bullets_; }

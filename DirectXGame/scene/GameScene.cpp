@@ -134,9 +134,6 @@ void GameScene::Draw() {
 
 void GameScene::CheckAllCollisions() {
 
-	//判定対象AとBの座標
-	Vector3 posA, posB;
-
 	//自弾リストの取得
 	const std::list<PlayerBullet*>& playerBullets = player_->GetBullets();
 	//敵弾リストの取得
@@ -144,23 +141,11 @@ void GameScene::CheckAllCollisions() {
 
 	#pragma region 自キャラと敵弾の当たり判定
 
-	//自キャラの座標
-	posA = player_->GetWorldPosition();
-
 	//自キャラと敵弾全ての当たり判定
 	for (EnemyBullet* bullet : enemyBullets) {
-		//敵弾の座標
-		posB = bullet->GetWorldPosition();
-
 		
-
-		//球と球の交差判定
-		if (Distance(posA, posB) <= HitRadius(player_->GetRadius(), bullet->GetRadius())) {
-			//自キャラの衝突時コールバックを呼び出す
-			player_->OnCollision();
-			//敵弾の衝突時コールバックを呼び出す
-			bullet->OnCollision();
-		}
+		//ペアの衝突判定
+		CheckCollisionPair(player_, bullet);
 
 	}
 
@@ -168,21 +153,11 @@ void GameScene::CheckAllCollisions() {
 
 	#pragma region 自弾と敵キャラの当たり判定
 
-	// 敵キャラの座標
-	posA = enemy_->GetWorldPosition();
-
 	// 敵キャラと自弾全ての当たり判定
 	for (PlayerBullet* bullet : playerBullets) {
-		// 自弾の座標
-		posB = bullet->GetWorldPosition();
+		
+		CheckCollisionPair(enemy_, bullet);
 
-		// 球と球の交差判定
-		if (Distance(posA, posB) <= HitRadius(enemy_->GetRadius(), bullet->GetRadius())) {
-			// 敵キャラの衝突時コールバックを呼び出す
-			enemy_->OnCollision();
-			// 自弾の衝突時コールバックを呼び出す
-			bullet->OnCollision();
-		}
 	}
 
 	#pragma endregion
@@ -191,23 +166,32 @@ void GameScene::CheckAllCollisions() {
 
 	//自弾と敵弾全ての当たり判定
 	for (PlayerBullet* pBullet : playerBullets) {
-		//自弾の座標
-		posA = pBullet->GetWorldPosition();
+		
 		for (EnemyBullet* eBullet : enemyBullets) {
-			//敵弾の座標
-			posB = eBullet->GetWorldPosition();
-			// 球と球の交差判定
-			if (Distance(posA, posB) <= HitRadius(pBullet->GetRadius(), eBullet->GetRadius())) {
-				// 自弾の衝突時コールバックを呼び出す
-				pBullet->OnCollision();
-				// 敵弾の衝突時コールバックを呼び出す
-				eBullet->OnCollision();
-			}
+			
+			CheckCollisionPair(pBullet, eBullet);
 
 		}
 
 	}
 
 	#pragma endregion
+
+}
+
+void GameScene::CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
+
+	Vector3 posA, posB;
+
+	posA = colliderA->GetWorldPosition();
+	posB = colliderB->GetWorldPosition();
+
+	//球と球の交差判定
+	if (Distance(posA, posB) <= HitRadius(colliderA->GetRadius(), colliderB->GetRadius())) {
+		//コライダーAの衝突時コールバックを呼び出す
+		colliderA->OnCollision();
+		//コライダーBの衝突時コールバックを呼び出す
+		colliderB->OnCollision();
+	}
 
 }

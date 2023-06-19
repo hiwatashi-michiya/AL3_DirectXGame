@@ -2,8 +2,9 @@
 #include <Model.h>
 #include <WorldTransform.h>
 #include <ViewProjection.h>
+#include "Collider.h"
 
-class EnemyBullet {
+class EnemyBullet : public Collider {
 public:
 	EnemyBullet();
 	~EnemyBullet();
@@ -18,10 +19,10 @@ public:
 
 	static const int32_t kLifeTime = 60 * 5;
 
-	Vector3 GetWorldPosition();
+	Vector3 GetWorldPosition() override;
 
 	// 衝突を検出したら呼び出されるコールバック関数
-	void OnCollision();
+	void OnCollision() override;
 
 	// 半径の取得
 	float GetRadius() { return radius_; }

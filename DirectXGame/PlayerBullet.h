@@ -3,9 +3,10 @@
 #include <WorldTransform.h>
 #include <ViewProjection.h>
 #include <Input.h>
+#include "Collider.h"
 
 //自キャラの弾
-class PlayerBullet {
+class PlayerBullet : public Collider {
 public:
 	PlayerBullet();
 	~PlayerBullet();
@@ -27,10 +28,10 @@ public:
 	// 寿命<frm>
 	static const int32_t kLifeTime = 60 * 5;
 
-	Vector3 GetWorldPosition();
+	Vector3 GetWorldPosition() override;
 
 	//衝突を検出したら呼び出されるコールバック関数
-	void OnCollision();
+	void OnCollision() override;
 
 	// 半径の取得
 	float GetRadius() { return radius_; }
