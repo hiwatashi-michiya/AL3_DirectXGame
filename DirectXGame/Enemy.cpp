@@ -29,6 +29,11 @@ void Enemy::Initialize(Model* model, uint32_t textureHandle) {
 	//接近フェーズ初期化
 	InitPhaseApproach();
 
+	// 衝突属性を設定
+	SetCollisionAttribute(0x00000002);
+	// 衝突対象を自分の属性以外に設定
+	SetCollisionMask(0xfffffffd);
+
 }
 
 void Enemy::Update() {
