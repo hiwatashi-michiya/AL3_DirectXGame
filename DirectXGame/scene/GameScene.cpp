@@ -10,6 +10,7 @@ GameScene::~GameScene() {
 	delete player_;
 	delete debugCamera_;
 	delete enemy_;
+	delete collisionManager_;
 }
 
 void GameScene::Initialize() {
@@ -34,6 +35,8 @@ void GameScene::Initialize() {
 	enemy_->SetPlayer(player_);
 	//デバッグカメラの生成
 	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
+	//衝突マネージャの生成
+	collisionManager_ = new CollisionManager();
 	//軸方向表示の表示を有効にする
 	AxisIndicator::GetInstance()->SetVisible(true);
 	//軸方向表示が参照するビュープロジェクションを指定する(アドレス渡し)
@@ -48,7 +51,7 @@ void GameScene::Update() {
 		enemy_->Update();
 	}
 
-	CheckAllCollisions();
+	UpdateCollisionManager();
 
 #ifdef _DEBUG
 
@@ -132,109 +135,27 @@ void GameScene::Draw() {
 #pragma endregion
 }
 
-void GameScene::CheckAllCollisions() {
+void GameScene::UpdateCollisionManager() {
 
-	//自弾リストの取得
+	collisionManager_->ClearList();
+
+	// 自弾リストの取得
 	const std::list<PlayerBullet*>& playerBullets = player_->GetBullets();
-	//敵弾リストの取得
+	// 敵弾リストの取得
 	const std::list<EnemyBullet*>& enemyBullets = enemy_->GetBullets();
 
-	//コライダー
-	std::list<Collider*> colliders_;
-	//コライダーをリストに登録
-	colliders_.push_back(player_);
-	colliders_.push_back(enemy_);
-	//自弾全てについて
+	// コライダーをリストに登録
+	collisionManager_->PushCollider(player_);
+	collisionManager_->PushCollider(enemy_);
+	// 自弾全てについて
 	for (PlayerBullet* bullet : playerBullets) {
-		colliders_.push_back(bullet);
+		collisionManager_->PushCollider(bullet);
 	}
-	//敵弾全てについて
+	// 敵弾全てについて
 	for (EnemyBullet* bullet : enemyBullets) {
-		colliders_.push_back(bullet);
+		collisionManager_->PushCollider(bullet);
 	}
 
-	//リスト内のペアを総当たり
-	std::list<Collider*>::iterator itrA = colliders_.begin();
-	for (; itrA != colliders_.end(); ++itrA) {
-		//イテレータAからコライダーAを取得
-		Collider* colliderA = *itrA;
-
-		//イテレータBはイテレータAの次の要素から回す(重複判定回避)
-		std::list<Collider*>::iterator itrB = itrA;
-		itrB++;
-
-		for (; itrB != colliders_.end(); ++itrB) {
-			//イテレータBからコライダーBを取得
-			Collider* colliderB = *itrB;
-
-			//ペアの当たり判定
-			CheckCollisionPair(colliderA, colliderB);
-
-		}
-
-	}
-
-	#pragma region 自キャラと敵弾の当たり判定
-
-	////自キャラと敵弾全ての当たり判定
-	//for (EnemyBullet* bullet : enemyBullets) {
-	//	
-	//	//ペアの衝突判定
-	//	CheckCollisionPair(player_, bullet);
-
-	//}
-
-	#pragma endregion
-
-	#pragma region 自弾と敵キャラの当たり判定
-
-	//// 敵キャラと自弾全ての当たり判定
-	//for (PlayerBullet* bullet : playerBullets) {
-	//	
-	//	CheckCollisionPair(enemy_, bullet);
-
-	//}
-
-	#pragma endregion
-
-	#pragma region 自弾と敵弾の当たり判定
-
-	////自弾と敵弾全ての当たり判定
-	//for (PlayerBullet* pBullet : playerBullets) {
-	//	
-	//	for (EnemyBullet* eBullet : enemyBullets) {
-	//		
-	//		CheckCollisionPair(pBullet, eBullet);
-
-	//	}
-
-	//}
-
-	#pragma endregion
-
-}
-
-void GameScene::CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
-
-	//衝突フィルタリング
-	if (
-		(colliderA->GetCollisionAttribute() & colliderB->GetCollisionMask()) == 0 ||
-		(colliderB->GetCollisionAttribute() & colliderA->GetCollisionMask()) == 0
-		) {
-		return;
-	}
-
-	Vector3 posA, posB;
-
-	posA = colliderA->GetWorldPosition();
-	posB = colliderB->GetWorldPosition();
-
-	//球と球の交差判定
-	if (Distance(posA, posB) <= HitRadius(colliderA->GetRadius(), colliderB->GetRadius())) {
-		//コライダーAの衝突時コールバックを呼び出す
-		colliderA->OnCollision();
-		//コライダーBの衝突時コールバックを呼び出す
-		colliderB->OnCollision();
-	}
+	collisionManager_->CheckAllCollisions();
 
 }
