@@ -4,10 +4,7 @@
 
 GameScene::GameScene() {}
 
-GameScene::~GameScene() { 
-	delete model_;
-	delete player_;
-}
+GameScene::~GameScene() {}
 
 void GameScene::Initialize() {
 
@@ -17,11 +14,11 @@ void GameScene::Initialize() {
 
 	viewProjection_.Initialize();
 	textureHandle_ = TextureManager::Load("mario.jpg");
-	model_ = Model::Create();
+	model_.reset(Model::Create());
 	// 自キャラの生成
-	player_ = new Player();
+	player_ = std::make_unique<Player>();
 	// 自キャラの初期化
-	player_->Initialize(model_, textureHandle_);
+	player_->Initialize(model_.get(), textureHandle_);
 
 }
 
