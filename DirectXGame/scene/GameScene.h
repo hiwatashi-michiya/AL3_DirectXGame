@@ -10,6 +10,9 @@
 #include "WorldTransform.h"
 #include "Player.h"
 #include <memory>
+#include "Skydome.h"
+#include "DebugCamera.h"
+#include "Ground.h"
 
 /// <summary>
 /// ゲームシーン
@@ -50,7 +53,6 @@ private: // メンバ変数
 	/// <summary>
 	/// ゲームシーン用
 	/// </summary>
-	uint32_t textureHandle_ = 0;
 
 	std::unique_ptr<Model> model_ = nullptr;
 
@@ -58,5 +60,21 @@ private: // メンバ変数
 
 	//自キャラ
 	std::unique_ptr<Player> player_ = nullptr;
+	//自キャラモデル
+	std::unique_ptr<Model> playerModel_ = nullptr;
+	//天球
+	std::unique_ptr<Skydome> skydome_ = nullptr;
+	//天球モデル
+	std::unique_ptr<Model> skydomeModel_ = nullptr;
+	//地面
+	std::unique_ptr<Ground> ground_ = nullptr;
+	//地面モデル
+	std::unique_ptr<Model> groundModel_ = nullptr;
+	//デバッグカメラ
+	std::unique_ptr<DebugCamera> debugCamera_ = nullptr;
+
+	//デバッグカメラ有効化フラグ
+	bool isDebugCameraActive_ = false;
 
 };
+

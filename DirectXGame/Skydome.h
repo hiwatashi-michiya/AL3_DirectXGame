@@ -3,10 +3,10 @@
 #include <WorldTransform.h>
 #include <ViewProjection.h>
 
-class Player {
+class Skydome {
 public:
-	Player();
-	~Player();
+	Skydome();
+	~Skydome();
 
 	//初期化
 	void Initialize(Model* model);
@@ -16,7 +16,6 @@ public:
 
 	//描画
 	void Draw(ViewProjection viewProjection);
-
 
 private:
 

@@ -3,10 +3,10 @@
 #include <WorldTransform.h>
 #include <ViewProjection.h>
 
-class Player {
+class Ground {
 public:
-	Player();
-	~Player();
+	Ground();
+	~Ground();
 
 	//初期化
 	void Initialize(Model* model);
@@ -22,8 +22,8 @@ private:
 
 	//ワールド変換データ
 	WorldTransform worldTransform_;
+
 	//モデル
 	Model* model_ = nullptr;
 
 };
-

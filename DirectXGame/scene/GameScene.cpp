@@ -1,6 +1,7 @@
 #include "GameScene.h"
 #include "TextureManager.h"
 #include <cassert>
+#include "AxisIndicator.h"
 
 GameScene::GameScene() {}
 
@@ -13,18 +14,64 @@ void GameScene::Initialize() {
 	audio_ = Audio::GetInstance();
 
 	viewProjection_.Initialize();
-	textureHandle_ = TextureManager::Load("mario.jpg");
+	viewProjection_.translation_.y = 5.0f;
+	viewProjection_.farZ = 2000.0f;
 	model_.reset(Model::Create());
 	// 自キャラの生成
+	playerModel_.reset(Model::CreateFromOBJ("player", true));
 	player_ = std::make_unique<Player>();
 	// 自キャラの初期化
-	player_->Initialize(model_.get(), textureHandle_);
+	player_->Initialize(playerModel_.get());
+	//天球初期化
+	skydomeModel_.reset(Model::CreateFromOBJ("skydome", true));
+	skydome_ = std::make_unique<Skydome>();
+	skydome_->Initialize(skydomeModel_.get());
+	//地面初期化
+	groundModel_.reset(Model::CreateFromOBJ("ground", true));
+	ground_ = std::make_unique<Ground>();
+	ground_->Initialize(groundModel_.get());
+	//デバッグカメラ初期化
+	debugCamera_.reset(new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight));
+	debugCamera_->SetFarZ(2000.0f);
+	AxisIndicator::GetInstance()->SetVisible(true);
+	AxisIndicator::GetInstance()->SetTargetViewProjection(&viewProjection_);
 
 }
 
 void GameScene::Update() { 
 	
 	player_->Update();
+
+#ifdef _DEBUG
+
+	if (input_->TriggerKey(DIK_0)) {
+
+		if (isDebugCameraActive_) {
+			isDebugCameraActive_ = false;
+		}
+		else {
+			isDebugCameraActive_ = true;
+		}
+
+	}
+
+
+#endif // _DEBUG
+
+	if (isDebugCameraActive_) {
+
+		//デバッグカメラ更新
+		debugCamera_->Update();
+		viewProjection_.matView = debugCamera_->GetViewProjection().matView;
+		viewProjection_.matProjection = debugCamera_->GetViewProjection().matProjection;
+		// ビュープロジェクションの転送
+		viewProjection_.TransferMatrix();
+
+	}
+	else {
+		//ビュープロジェクション更新
+		viewProjection_.UpdateMatrix();
+	}
 
 }
 
@@ -54,6 +101,8 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
+	skydome_->Draw(viewProjection_);
+	ground_->Draw(viewProjection_);
 	player_->Draw(viewProjection_);
 
 	// 3Dオブジェクト描画後処理
