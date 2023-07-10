@@ -2,6 +2,7 @@
 #include <Model.h>
 #include <WorldTransform.h>
 #include <ViewProjection.h>
+#include <Input.h>
 
 class Player {
 public:
@@ -17,6 +18,11 @@ public:
 	//描画
 	void Draw(ViewProjection viewProjection);
 
+	const WorldTransform& GetWorldTransform() { return worldTransform_; }
+
+	void SetViewProjection(const ViewProjection* viewProjection) {
+		viewProjection_ = viewProjection;
+	}
 
 private:
 
@@ -24,6 +30,8 @@ private:
 	WorldTransform worldTransform_;
 	//モデル
 	Model* model_ = nullptr;
+	//カメラのビュープロジェクション
+	const ViewProjection* viewProjection_ = nullptr;
 
 };
 

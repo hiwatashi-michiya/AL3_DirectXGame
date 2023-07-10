@@ -33,6 +33,14 @@ void GameScene::Initialize() {
 	//デバッグカメラ初期化
 	debugCamera_.reset(new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight));
 	debugCamera_->SetFarZ(2000.0f);
+	//追従カメラの生成
+	followCamera_ = std::make_unique<FollowCamera>();
+	followCamera_->Initialize();
+	//自キャラのワールドトランスフォームを追従カメラにセット
+	followCamera_->SetTarget(&player_->GetWorldTransform());
+	//自キャラに追従カメラをセット
+	player_->SetViewProjection(&followCamera_->GetViewProjection());
+
 	AxisIndicator::GetInstance()->SetVisible(true);
 	AxisIndicator::GetInstance()->SetTargetViewProjection(&viewProjection_);
 
@@ -41,6 +49,9 @@ void GameScene::Initialize() {
 void GameScene::Update() { 
 	
 	player_->Update();
+
+	//追従カメラの更新
+	followCamera_->Update();
 
 #ifdef _DEBUG
 
@@ -69,8 +80,12 @@ void GameScene::Update() {
 
 	}
 	else {
+
+		//追従カメラのビュー行列、プロジェクション行列をそれぞれコピー
+		viewProjection_.matView = followCamera_->GetViewProjection().matView;
+		viewProjection_.matProjection = followCamera_->GetViewProjection().matProjection;
 		//ビュープロジェクション更新
-		viewProjection_.UpdateMatrix();
+		viewProjection_.TransferMatrix();
 	}
 
 }
