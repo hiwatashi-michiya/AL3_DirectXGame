@@ -20,6 +20,7 @@ GameScene::~GameScene() {
 	delete skydome_;
 	delete modelSkydome_;
 	delete railCamera_;
+	delete scriptEditor_;
 }
 
 void GameScene::Initialize() {
@@ -55,6 +56,9 @@ void GameScene::Initialize() {
 	//デバッグカメラの生成
 	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
 	debugCamera_->SetFarZ(2200.0f);
+	//スクリプト編集モードの初期化
+	scriptEditor_ = new ScriptEditor();
+	scriptEditor_->Initialize();
 	//軸方向表示の表示を有効にする
 	AxisIndicator::GetInstance()->SetVisible(true);
 	//軸方向表示が参照するビュープロジェクションを指定する(アドレス渡し)
@@ -64,39 +68,47 @@ void GameScene::Initialize() {
 
 void GameScene::Update() { 
 	
-	UpdateEnemyPopCommands();
+	if (scriptEditor_->GetIsEdit()) {
 
-	enemyBullets_.remove_if([](EnemyBullet* bullet) {
-		if (bullet->isDead()) {
-			delete bullet;
-			return true;
-		}
-		return false;
-	});
+		scriptEditor_->Update();
 
-	enemies_.remove_if([](Enemy* enemy) {
-		if (enemy->IsDead()) {
-			delete enemy;
-			return true;
-		}
-		return false;
-	});
-
-	railCamera_->Update();
-
-	skydome_->Update();
-
-	player_->Update();
-
-	for (Enemy* enemy : enemies_) {
-		enemy->Update();
 	}
+	else {
 
-	for (EnemyBullet* bullet : enemyBullets_) {
-		bullet->Update();
+		UpdateEnemyPopCommands();
+
+		enemyBullets_.remove_if([](EnemyBullet* bullet) {
+			if (bullet->isDead()) {
+				delete bullet;
+				return true;
+			}
+			return false;
+		});
+
+		enemies_.remove_if([](Enemy* enemy) {
+			if (enemy->IsDead()) {
+				delete enemy;
+				return true;
+			}
+			return false;
+		});
+
+		railCamera_->Update();
+
+		player_->Update();
+
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+		}
+
+		for (EnemyBullet* bullet : enemyBullets_) {
+			bullet->Update();
+		}
+
+		CheckAllCollisions();
+
 	}
-
-	CheckAllCollisions();
+	
 
 #ifdef _DEBUG
 
@@ -116,7 +128,7 @@ void GameScene::Update() {
 
 
 	//カメラの処理
-	if (isDebugCameraActive_) {
+	if (isDebugCameraActive_ || scriptEditor_->GetIsEdit()) {
 		//デバッグカメラの更新
 		debugCamera_->Update();
 		viewProjection_.matView = debugCamera_->GetViewProjection().matView;
@@ -159,8 +171,6 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
-
-	skydome_->Draw(viewProjection_);
 
 	player_->Draw(viewProjection_);
 	

@@ -14,6 +14,7 @@
 #include "Skydome.h"
 #include "RailCamera.h"
 #include <sstream>
+#include "ScriptEditor.h"
 
 /// <summary>
 /// ゲームシーン
@@ -110,6 +111,9 @@ private: // メンバ変数
 
 	//レールカメラ
 	RailCamera* railCamera_ = nullptr;
+
+	//スクリプト編集モード
+	ScriptEditor* scriptEditor_ = nullptr;
 
 	//デバッグカメラ有効
 	bool isDebugCameraActive_ = false;

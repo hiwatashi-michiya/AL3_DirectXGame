@@ -16,6 +16,12 @@ class Player;
 //ゲームシーンの前方宣言
 class GameScene;
 
+enum TYPE {
+	EASY,
+	NORMAL,
+	HARD
+};
+
 class Enemy {
 public:
 	Enemy();
