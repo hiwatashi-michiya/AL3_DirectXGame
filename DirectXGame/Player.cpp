@@ -1,19 +1,44 @@
+#define _USE_MATH_DEFINES
 #include "Player.h"
 #include <cassert>
+#include <math.h>
+#include <imgui.h>
 
 Player::Player() {}
 
 Player::~Player() {}
 
-void Player::Initialize(Model* model) {
+void Player::Initialize(Model* modelBody, Model* modelHead, Model* modelL_arm, Model* modelR_arm) {
 
 	//NULLポインタチェック
-	assert(model);
+	assert(modelBody && modelHead && modelL_arm && modelR_arm);
 	//メンバ変数に記録
-	model_ = model;
+	modelFighterBody_ = modelBody;
+	modelFighterHead_ = modelHead;
+	modelFighterL_arm_ = modelL_arm;
+	modelFighterR_arm_ = modelR_arm;
 	//ワールド変換の初期化
-	worldTransform_.Initialize();
-	worldTransform_.translation_.y = 1.0f;
+	worldTransformBase_.Initialize();
+	worldTransformBase_.translation_.y = 1.0f;
+	//体
+	worldTransformBody_.Initialize();
+	//頭
+	worldTransformHead_.Initialize();
+	worldTransformHead_.parent_ = &worldTransformBody_;
+	worldTransformHead_.translation_.y = 3.0f;
+	//左腕
+	worldTransformL_arm_.Initialize();
+	worldTransformL_arm_.parent_ = &worldTransformBody_;
+	worldTransformL_arm_.translation_.x = -1.0f;
+	worldTransformL_arm_.translation_.y = 2.5f;
+	//右腕
+	worldTransformR_arm_.Initialize();
+	worldTransformR_arm_.parent_ = &worldTransformBody_;
+	worldTransformR_arm_.translation_.x = 1.0f;
+	worldTransformR_arm_.translation_.y = 2.5f;
+
+	//浮遊ギミック初期化
+	InitializeFloatingGimmick();
 
 }
 
@@ -37,21 +62,64 @@ void Player::Update() {
 		move = TransformNormal(move, matRotate);
 
 		//移動
-		worldTransform_.translation_ = Add(worldTransform_.translation_, move);
+		worldTransformBase_.translation_ = Add(worldTransformBase_.translation_, move);
 
 		//回転
-		worldTransform_.rotation_.y = float(std::atan2(double(move.x), double(move.z)));
+		worldTransformBase_.rotation_.y = float(std::atan2(double(move.x), double(move.z)));
 
 	}
 
 	//行数を定数バッファに転送
-	worldTransform_.UpdateMatrix();
+	worldTransformBase_.UpdateMatrix();
+	worldTransformBody_.UpdateMatrix();
+	worldTransformHead_.UpdateMatrix();
+	worldTransformL_arm_.UpdateMatrix();
+	worldTransformR_arm_.UpdateMatrix();
+
+	//浮遊ギミック更新
+	UpdateFloatingGimmick();
 
 }
 
 void Player::Draw(ViewProjection viewProjection) {
 
 	//3Dモデルを描画
-	model_->Draw(worldTransform_, viewProjection);
+	modelFighterBody_->Draw(worldTransformBody_, viewProjection);
+	modelFighterHead_->Draw(worldTransformHead_, viewProjection);
+	modelFighterL_arm_->Draw(worldTransformL_arm_, viewProjection);
+	modelFighterR_arm_->Draw(worldTransformR_arm_, viewProjection);
+
+}
+
+void Player::InitializeFloatingGimmick() {
+	
+	floatingParameter_ = 0.0f;
+
+}
+
+void Player::UpdateFloatingGimmick() {
+
+	ImGui::Begin("Player");
+	ImGui::SliderFloat3("Head Translation", &worldTransformHead_.translation_.x, -100.0f, 100.0f);
+	ImGui::SliderFloat3("ArmL Translation", &worldTransformL_arm_.translation_.x, -100.0f, 100.0f);
+	ImGui::SliderFloat3("ArmR Translation", &worldTransformR_arm_.translation_.x, -100.0f, 100.0f);
+	ImGui::SliderInt("cycle", &cycle, 10, 300);
+	ImGui::SliderFloat("swing", &swing, 0.1f, 50.0f);
+	ImGui::End();
+
+	//1フレームでのパラメータ加算値
+	float step = float(2.0f * M_PI / cycle);
+
+	//パラメータを1ステップ分加算
+	floatingParameter_ += step;
+
+	//2πを超えたら0に戻す
+	floatingParameter_ = float(std::fmod(floatingParameter_, 2.0f * M_PI));
+
+	//浮遊を座標に反映
+	worldTransformBody_.translation_.y = std::sinf(floatingParameter_) * swing;
+
+	worldTransformL_arm_.rotation_.x = std::cosf(floatingParameter_) * swing;
+	worldTransformR_arm_.rotation_.x = std::cosf(floatingParameter_) * swing;
 
 }

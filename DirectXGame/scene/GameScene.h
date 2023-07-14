@@ -62,7 +62,11 @@ private: // メンバ変数
 	//自キャラ
 	std::unique_ptr<Player> player_ = nullptr;
 	//自キャラモデル
-	std::unique_ptr<Model> playerModel_ = nullptr;
+	std::unique_ptr<Model> modelFighterBody_;
+	std::unique_ptr<Model> modelFighterHead_;
+	std::unique_ptr<Model> modelFighterL_arm_;
+	std::unique_ptr<Model> modelFighterR_arm_;
+
 	//天球
 	std::unique_ptr<Skydome> skydome_ = nullptr;
 	//天球モデル

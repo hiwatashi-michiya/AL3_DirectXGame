@@ -18,10 +18,14 @@ void GameScene::Initialize() {
 	viewProjection_.farZ = 2000.0f;
 	model_.reset(Model::Create());
 	// 自キャラの生成
-	playerModel_.reset(Model::CreateFromOBJ("player", true));
+	modelFighterBody_.reset(Model::CreateFromOBJ("float_body", true));
+	modelFighterHead_.reset(Model::CreateFromOBJ("float_head", true));
+	modelFighterL_arm_.reset(Model::CreateFromOBJ("float_L_arm", true));
+	modelFighterR_arm_.reset(Model::CreateFromOBJ("float_R_arm", true));
 	player_ = std::make_unique<Player>();
 	// 自キャラの初期化
-	player_->Initialize(playerModel_.get());
+	player_->Initialize(modelFighterBody_.get(),modelFighterHead_.get(),
+		modelFighterL_arm_.get(), modelFighterR_arm_.get());
 	//天球初期化
 	skydomeModel_.reset(Model::CreateFromOBJ("skydome", true));
 	skydome_ = std::make_unique<Skydome>();
