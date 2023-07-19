@@ -128,13 +128,20 @@ void GameScene::Update() {
 
 
 	//カメラの処理
-	if (isDebugCameraActive_ || scriptEditor_->GetIsEdit()) {
+	if (isDebugCameraActive_) {
 		//デバッグカメラの更新
 		debugCamera_->Update();
 		viewProjection_.matView = debugCamera_->GetViewProjection().matView;
 		viewProjection_.matProjection = debugCamera_->GetViewProjection().matProjection;
 		//ビュープロジェクションの転送
 		viewProjection_.TransferMatrix();
+	}
+	else if (scriptEditor_->GetIsEdit()) {
+		viewProjection_.matView = scriptEditor_->GetMatView();
+		viewProjection_.matProjection = scriptEditor_->GetMatProjection();
+		// ビュープロジェクションの転送
+		viewProjection_.TransferMatrix();
+
 	}
 	else {
 		viewProjection_.matView = railCamera_->GetViewProjection().matView;
@@ -171,6 +178,10 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
+
+	if (scriptEditor_->GetIsEdit()) {
+		scriptEditor_->Draw(viewProjection_);
+	}
 
 	player_->Draw(viewProjection_);
 	
