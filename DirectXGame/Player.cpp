@@ -2,7 +2,10 @@
 #include "Player.h"
 #include <cassert>
 #include <math.h>
+
+#ifdef _DEBUG
 #include <imgui.h>
+#endif // _DEBUG
 
 Player::Player() {}
 
@@ -81,7 +84,7 @@ void Player::Update() {
 
 }
 
-void Player::Draw(ViewProjection viewProjection) {
+void Player::Draw(const ViewProjection& viewProjection) {
 
 	//3Dモデルを描画
 	modelFighterBody_->Draw(worldTransformBody_, viewProjection);
@@ -99,6 +102,8 @@ void Player::InitializeFloatingGimmick() {
 
 void Player::UpdateFloatingGimmick() {
 
+#ifdef _DEBUG
+
 	ImGui::Begin("Player");
 	ImGui::SliderFloat3("Head Translation", &worldTransformHead_.translation_.x, -100.0f, 100.0f);
 	ImGui::SliderFloat3("ArmL Translation", &worldTransformL_arm_.translation_.x, -100.0f, 100.0f);
@@ -106,6 +111,8 @@ void Player::UpdateFloatingGimmick() {
 	ImGui::SliderInt("cycle", &cycle, 10, 300);
 	ImGui::SliderFloat("swing", &swing, 0.1f, 50.0f);
 	ImGui::End();
+
+#endif // _DEBUG
 
 	//1フレームでのパラメータ加算値
 	float step = float(2.0f * M_PI / cycle);

@@ -3,6 +3,7 @@
 #include "Matrix4x4.h"
 #include "Vector3.h"
 #include <d3d12.h>
+#include <type_traits>
 #include <wrl.h>
 
 // 定数バッファ用データ構造体
@@ -15,12 +16,8 @@ struct ConstBufferDataViewProjection {
 /// <summary>
 /// ビュープロジェクション変換データ
 /// </summary>
-struct ViewProjection {
-	// 定数バッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> constBuff_;
-	// マッピング済みアドレス
-	ConstBufferDataViewProjection* constMap = nullptr;
-
+class ViewProjection {
+public:
 #pragma region ビュー行列の設定
 	// X,Y,Z軸回りのローカル回転角
 	Vector3 rotation_ = {0, 0, 0};
@@ -43,6 +40,9 @@ struct ViewProjection {
 	Matrix4x4 matView;
 	// 射影行列
 	Matrix4x4 matProjection;
+
+	ViewProjection() = default;
+	~ViewProjection() = default;
 
 	/// <summary>
 	/// 初期化
@@ -72,4 +72,20 @@ struct ViewProjection {
 	/// 射影行列を更新する
 	/// </summary>
 	void UpdateProjectionMatrix();
+	/// <summary>
+	/// 定数バッファの取得
+	/// </summary>
+	/// <returns>定数バッファ</returns>
+	const Microsoft::WRL::ComPtr<ID3D12Resource>& GetConstBuffer() const { return constBuffer_; }
+
+private:
+	// 定数バッファ
+	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffer_;
+	// マッピング済みアドレス
+	ConstBufferDataViewProjection* constMap = nullptr;
+	// コピー禁止
+	ViewProjection(const ViewProjection&) = delete;
+	ViewProjection& operator=(const ViewProjection&) = delete;
 };
+
+static_assert(!std::is_copy_assignable_v<ViewProjection>);

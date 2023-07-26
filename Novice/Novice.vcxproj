@@ -73,6 +73,10 @@
       <AdditionalLibraryDirectories>C:\KamataEngine\DirectXGame\lib\KamataEngineLib\$(Configuration);C:\KamataEngine\External\DirectXTex\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>KamataEngineLib.lib;DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy C:\KamataEngine\DirectXGame\Resources .\NoviceResources /S /E /I /D /R /Y
+xcopy C:\KamataEngine\DirectXGame\Resources "$(OutDirFullPath)NoviceResources" /S /E /I /D /R /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -82,7 +86,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);C:\KamataEngine\DirectXGame\math;C:\KamataEngine\DirectXGame\2d;C:\KamataEngine\DirectXGame\3d;C:\KamataEngine\DirectXGame\audio;C:\KamataEngine\DirectXGame\base;C:\KamataEngine\DirectXGame\input;C:\KamataEngine\DirectXGame\scene;C:\KamataEngine\External\DirectXTex\include;C:\KamataEngine\External\imgui;C:\KamataEngine\Adapter;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);C:\KamataEngine\DirectXGame\math;C:\KamataEngine\DirectXGame\2d;C:\KamataEngine\DirectXGame\3d;C:\KamataEngine\DirectXGame\audio;C:\KamataEngine\DirectXGame\base;C:\KamataEngine\DirectXGame\input;C:\KamataEngine\DirectXGame\scene;C:\KamataEngine\External\DirectXTex\include;C:\KamataEngine\Adapter;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MinSpace</Optimization>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -98,8 +102,13 @@
       <AdditionalDependencies>KamataEngineLib.lib;DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\KamataEngine\DirectXGame\lib\KamataEngineLib\$(Configuration);C:\KamataEngine\External\DirectXTex\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy C:\KamataEngine\DirectXGame\Resources .\NoviceResources /S /E /I /D /R /Y
+xcopy C:\KamataEngine\DirectXGame\Resources "$(OutDirFullPath)NoviceResources" /S /E /I /D /R /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="C:\KamataEngine\DirectXGame\base\StringUtility.cpp" />
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\DirectXCommon.cpp" />
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\WinApp.cpp" />
     <ClCompile Include="C:\KamataEngine\DirectXGame\scene\GameScene.cpp" />
@@ -109,6 +118,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="C:\KamataEngine\DirectXGame\base\StringUtility.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\math\Matrix4x4.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\math\Vector2.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\math\Vector3.h" />

@@ -18,7 +18,7 @@ void Skydome::Update() {
 
 }
 
-void Skydome::Draw(ViewProjection viewProjection) {
+void Skydome::Draw(const ViewProjection& viewProjection) {
 
 	model_->Draw(worldTransform_, viewProjection);
 
