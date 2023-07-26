@@ -33,3 +33,9 @@ float Distance(const Vector3& v1, const Vector3& v2);
 
 //二つの物体の半径から当たり判定を計算する関数
 float HitRadius(float r1, float r2);
+
+//範囲制限
+int Clamp(int x, int min, int max);
+
+//範囲制限
+float Clamp(float x, float min, float max);

@@ -50,4 +50,6 @@ struct WorldTransform {
 	/// </summary>
 	void UpdateMatrix();
 
+	void SetTranslation(const Vector3& v);
+
 };

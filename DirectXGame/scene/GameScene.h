@@ -15,6 +15,7 @@
 #include "RailCamera.h"
 #include <sstream>
 #include "ScriptEditor.h"
+#include <PrimitiveDrawer.h>
 
 /// <summary>
 /// ゲームシーン
@@ -119,12 +120,25 @@ private: // メンバ変数
 	bool isDebugCameraActive_ = false;
 
 	//敵生成関数
-	void EnemyPop(Vector3 position);
+	void EnemyPop(Vector3 position, int type);
 
 	//待機フラグ
 	bool isWait = false;
 
 	//待機タイマー
 	uint32_t waitTimer = 0;
+
+	PrimitiveDrawer* primitiveDrawer_ = nullptr;
+
+	// 原点と各軸方向に伸ばした点の座標
+	const Vector3 origin_ = {0.0f, 0.0f, 0.0f};
+	const Vector3 axisX_ = {1000.0f, 0.0f, 0.0f};
+	const Vector3 axisY_ = {0.0f, 1000.0f, 0.0f};
+	const Vector3 axisZ_ = {0.0f, 0.0f, 1000.0f};
+
+	const Vector4 red_ = {1.0f, 0.0f, 0.0f, 1.0f};
+	const Vector4 green_ = {0.0f, 1.0f, 0.0f, 1.0f};
+	const Vector4 blue_ = {0.0f, 0.0f, 1.0f, 1.0f};
+	const Vector4 white_ = {1.0f, 1.0f, 1.0f, 1.0f};
 
 };

@@ -15,5 +15,9 @@ void WorldTransform::UpdateMatrix() {
 
 }
 
+void WorldTransform::SetTranslation(const Vector3& v) {
 
+	translation_ = v;
+
+}
 

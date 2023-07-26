@@ -56,6 +56,9 @@ public:
 	//初期座標のセット
 	void SetStartPosition(Vector3 position);
 
+	//タイプのセット
+	void SetType(int type) { type_ = type; }
+
 	//生きているかどうかの判定取得
 	bool IsDead() const { return isDead_; }
 
@@ -73,6 +76,9 @@ private:
 	//生きているか
 	bool isDead_ = false;
 
+	//敵の種類
+	int type_ = 0;
+
 	//ワールド変換データ
 	WorldTransform worldTransform_;
 
@@ -84,6 +90,11 @@ private:
 
 	//テクスチャハンドル
 	uint32_t textureHandle_ = 0u;
+
+	// テクスチャハンドル
+	uint32_t enemyEasyTex_ = 0u;
+	uint32_t enemyNormalTex_ = 0u;
+	uint32_t enemyHardTex_ = 0u;
 
 	//フェーズ
 	Phase phase_ = Phase::Approach;

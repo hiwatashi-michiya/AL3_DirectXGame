@@ -32,7 +32,7 @@ void GameScene::Initialize() {
 	//ビュープロジェクションの初期化
 	viewProjection_.farZ = 2200.0f;
 	viewProjection_.Initialize();
-	textureHandle_ = TextureManager::Load("mario.jpg");
+	textureHandle_ = TextureManager::Load("enemy.png");
 	enemyTextureHandle_ = TextureManager::Load("enemy.png");
 	model_ = Model::Create();
 	//3Dモデルの生成
@@ -58,11 +58,14 @@ void GameScene::Initialize() {
 	debugCamera_->SetFarZ(2200.0f);
 	//スクリプト編集モードの初期化
 	scriptEditor_ = new ScriptEditor();
-	scriptEditor_->Initialize();
+	scriptEditor_->Initialize(model_);
 	//軸方向表示の表示を有効にする
 	AxisIndicator::GetInstance()->SetVisible(true);
 	//軸方向表示が参照するビュープロジェクションを指定する(アドレス渡し)
 	AxisIndicator::GetInstance()->SetTargetViewProjection(&viewProjection_);
+	//プリミティブ初期化
+	primitiveDrawer_ = PrimitiveDrawer::GetInstance();
+	primitiveDrawer_->SetViewProjection(&viewProjection_);
 
 }
 
@@ -70,7 +73,7 @@ void GameScene::Update() {
 	
 	if (scriptEditor_->GetIsEdit()) {
 
-		scriptEditor_->Update();
+		scriptEditor_->Update(viewProjection_);
 
 	}
 	else {
@@ -113,13 +116,16 @@ void GameScene::Update() {
 #ifdef _DEBUG
 
 	//特定のキー入力でデバッグカメラの切り替え
-	if (input_->TriggerKey(DIK_0)) {
+	if (input_->PushKey(DIK_LCONTROL)) {
 
-		if (isDebugCameraActive_ == false) {
-			isDebugCameraActive_ = true;
-		}
-		else {
-			isDebugCameraActive_ = false;
+		if (input_->TriggerKey(DIK_Q)) {
+
+			if (isDebugCameraActive_ == false) {
+				isDebugCameraActive_ = true;
+			} else {
+				isDebugCameraActive_ = false;
+			}
+
 		}
 
 	}
@@ -164,6 +170,10 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに背景スプライトの描画処理を追加できる
 	/// </summary>
+	
+	if (scriptEditor_->GetIsEdit()) {
+		scriptEditor_->DrawUI();
+	}
 
 	// スプライト描画後処理
 	Sprite::PostDraw();
@@ -179,6 +189,7 @@ void GameScene::Draw() {
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
 
+	
 	if (scriptEditor_->GetIsEdit()) {
 		scriptEditor_->Draw(viewProjection_);
 	}
@@ -193,6 +204,8 @@ void GameScene::Draw() {
 		bullet->Draw(viewProjection_);
 	}
 
+	/*skydome_->Draw(viewProjection_);*/
+
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 #pragma endregion
@@ -204,6 +217,29 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに前景スプライトの描画処理を追加できる
 	/// </summary>
+
+	if (scriptEditor_->GetIsEdit()) {
+
+		primitiveDrawer_->DrawLine3d(Subtract(origin_, axisX_), axisX_, red_);
+		primitiveDrawer_->DrawLine3d(Subtract(origin_, axisY_), axisY_, green_);
+		primitiveDrawer_->DrawLine3d(Subtract(origin_, axisZ_), axisZ_, blue_);
+
+		for (int i = 0; i < 40; i++) {
+
+			float distance = 50.0f * i - 1000.0f;
+			Vector3 lineStartX = {-1000.0f, 0.0f, distance};
+			Vector3 lineEndX = {1000.0f, 0.0f, distance};
+			Vector3 lineStartZ = {distance, 0.0f, -1000.0f};
+			Vector3 lineEndZ = {distance, 0.0f, 1000.0f};
+
+			primitiveDrawer_->DrawLine3d(lineStartX, lineEndX, white_);
+			primitiveDrawer_->DrawLine3d(lineStartZ, lineEndZ, white_);
+		}
+
+	}
+	
+
+	
 
 	// スプライト描画後処理
 	Sprite::PostDraw();
@@ -304,7 +340,7 @@ void GameScene::LoadEnemyPopData() {
 
 	//ファイルを開く
 	std::ifstream file;
-	file.open("./Resources/Commands/enemyPop.csv");
+	file.open("./Resources/Commands/test2.csv");
 	assert(file.is_open());
 
 	//ファイルの内容を文字列ストリームにコピー
@@ -315,7 +351,7 @@ void GameScene::LoadEnemyPopData() {
 
 }
 
-void GameScene::EnemyPop(Vector3 position) {
+void GameScene::EnemyPop(Vector3 position, int type) {
 	
 	// 敵キャラの生成
 	Enemy* newEnemy = new Enemy();
@@ -323,6 +359,8 @@ void GameScene::EnemyPop(Vector3 position) {
 	newEnemy->Initialize(model_, enemyTextureHandle_, this);
 	//初期位置を決める
 	newEnemy->SetStartPosition(position);
+	//敵種類の設定
+	newEnemy->SetType(type);
 	// 敵キャラに自キャラのアドレスを渡す
 	newEnemy->SetPlayer(player_);
 
@@ -374,8 +412,12 @@ void GameScene::UpdateEnemyPopCommands() {
 			getline(line_stream, word, ',');
 			float z = (float)std::atof(word.c_str());
 
+			//敵の種類
+			getline(line_stream, word, ',');
+			int type = (int)std::atoi(word.c_str());
+
 			//敵を発生させる
-			EnemyPop(Vector3(x, y, z));
+			EnemyPop(Vector3(x, y, z), type);
 
 		}
 		//WAITコマンド

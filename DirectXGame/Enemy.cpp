@@ -3,6 +3,7 @@
 #include <ImGuiManager.h>
 #include "Player.h"
 #include "GameScene.h"
+#include <TextureManager.h>
 
 Enemy::Enemy() {}
 
@@ -24,6 +25,10 @@ void Enemy::Initialize(Model* model, uint32_t textureHandle, GameScene* gameScen
 	//接近フェーズ初期化
 	InitPhaseApproach();
 
+	enemyEasyTex_ = TextureManager::Load("easy.png");
+	enemyNormalTex_ = TextureManager::Load("normal.png");
+	enemyHardTex_ = TextureManager::Load("hard.png");
+
 }
 
 void Enemy::Update() {
@@ -38,24 +43,24 @@ void Enemy::Update() {
 		break;
 	}
 
-	//発射タイマーカウントダウン
-	fireTimer_--;
-	//指定時間に達した
-	if (fireTimer_ == 0) {
-		//弾発射
-		Fire();
-		//発射タイマー初期化
-		fireTimer_ = kFireInterval;
-	}
+	////発射タイマーカウントダウン
+	//fireTimer_--;
+	////指定時間に達した
+	//if (fireTimer_ == 0) {
+	//	//弾発射
+	//	Fire();
+	//	//発射タイマー初期化
+	//	fireTimer_ = kFireInterval;
+	//}
 
 	//行列の更新
 	worldTransform_.UpdateMatrix();
 
-	ImGui::Begin("Enemy state");
+	/*ImGui::Begin("Enemy state");
 	ImGui::Text(
 	    "Enemy Position\n x : %0.2f\n y : %0.2f\n z : %0.2f\nFireTimer\n %d", worldTransform_.translation_.x,
 	    worldTransform_.translation_.y, worldTransform_.translation_.z, fireTimer_);
-	ImGui::End();
+	ImGui::End();*/
 
 }
 
@@ -126,8 +131,33 @@ void Enemy::PhaseLeave() {
 
 void Enemy::Draw(ViewProjection viewProjection) {
 
-	// 3Dモデルを描画
-	model_->Draw(worldTransform_, viewProjection, textureHandle_);	
+	switch (type_) {
+	
+	default:
+	case EASY:
+
+		// 3Dモデルを描画
+		model_->Draw(worldTransform_, viewProjection, enemyEasyTex_);	
+
+		break;
+
+	case NORMAL:
+
+		// 3Dモデルを描画
+		model_->Draw(worldTransform_, viewProjection, enemyNormalTex_);	
+
+		break;
+
+	case HARD:
+
+		// 3Dモデルを描画
+		model_->Draw(worldTransform_, viewProjection, enemyHardTex_);	
+
+		break;
+
+	}
+
+	
 
 }
 

@@ -130,3 +130,30 @@ float HitRadius(float r1, float r2) {
 	return result;
 
 }
+
+int Clamp(int x, int min, int max) {
+
+	if (x < min) {
+		return min;
+	}
+
+	if (x > max) {
+		return max;
+	}
+
+	return x;
+
+}
+
+float Clamp(float x, float min, float max) {
+
+	if (x < min) {
+		return min;
+	}
+
+	if (x > max) {
+		return max;
+	}
+
+	return x;
+}
