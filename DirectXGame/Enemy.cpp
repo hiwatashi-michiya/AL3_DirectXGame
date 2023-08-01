@@ -8,7 +8,6 @@ void Enemy::Initialize(const std::vector<Model*>& models) {
 	worldTransform_.translation_.y = 1.0f;
 	worldTransformBody_.Initialize();
 	worldTransformBody_.translation_.z = 20.0f;
-	worldTransformBody_.rotation_.y = 3.14f;
 
 	worldTransformL_arm_.Initialize();
 	worldTransformL_arm_.translation_.x = -1.5f;
