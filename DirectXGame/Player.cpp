@@ -2,6 +2,7 @@
 #include "Player.h"
 #include <cassert>
 #include <math.h>
+#include "GlobalVariables.h"
 
 #ifdef _DEBUG
 #include <imgui.h>
@@ -15,6 +16,15 @@ void Player::Initialize(const std::vector<Model*>& models) {
 
 	//基底クラスの初期化
 	BaseCharacter::Initialize(models);
+
+	GlobalVariables* globalVariables;
+	globalVariables = GlobalVariables::GetInstance();
+	const char* groupName = "Player";
+	//グループを追加
+	GlobalVariables::GetInstance()->CreateGroup(groupName);
+	globalVariables->SetValue(groupName, "Test int", 90);
+	globalVariables->SetValue(groupName, "Test float", 12.5f);
+	globalVariables->SetValue(groupName, "Test Vector3", Vector3(1.0f,2.0f,3.0f));
 
 	//ワールド変換の初期化
 	worldTransformBase_.Initialize();
