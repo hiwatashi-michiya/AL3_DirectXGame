@@ -11,20 +11,17 @@ Player::Player() {}
 
 Player::~Player() {}
 
-void Player::Initialize(Model* modelBody, Model* modelHead, Model* modelL_arm, Model* modelR_arm) {
+void Player::Initialize(const std::vector<Model*>& models) {
 
-	//NULLポインタチェック
-	assert(modelBody && modelHead && modelL_arm && modelR_arm);
-	//メンバ変数に記録
-	modelFighterBody_ = modelBody;
-	modelFighterHead_ = modelHead;
-	modelFighterL_arm_ = modelL_arm;
-	modelFighterR_arm_ = modelR_arm;
+	//基底クラスの初期化
+	BaseCharacter::Initialize(models);
+
 	//ワールド変換の初期化
 	worldTransformBase_.Initialize();
 	worldTransformBase_.translation_.y = 1.0f;
 	//体
 	worldTransformBody_.Initialize();
+	worldTransformBody_.parent_ = &worldTransformBase_;
 	//頭
 	worldTransformHead_.Initialize();
 	worldTransformHead_.parent_ = &worldTransformBody_;
@@ -87,10 +84,10 @@ void Player::Update() {
 void Player::Draw(const ViewProjection& viewProjection) {
 
 	//3Dモデルを描画
-	modelFighterBody_->Draw(worldTransformBody_, viewProjection);
-	modelFighterHead_->Draw(worldTransformHead_, viewProjection);
-	modelFighterL_arm_->Draw(worldTransformL_arm_, viewProjection);
-	modelFighterR_arm_->Draw(worldTransformR_arm_, viewProjection);
+	models_[kModelIndexBody]->Draw(worldTransformBody_, viewProjection);
+	models_[kModelIndexHead]->Draw(worldTransformHead_, viewProjection);
+	models_[kModelIndexL_arm]->Draw(worldTransformL_arm_, viewProjection);
+	models_[kModelIndexR_arm]->Draw(worldTransformR_arm_, viewProjection);
 
 }
 

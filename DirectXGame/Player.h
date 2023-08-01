@@ -4,20 +4,21 @@
 #include <ViewProjection.h>
 #include <Input.h>
 #include <memory>
+#include "BaseCharacter.h"
 
-class Player {
+class Player : public BaseCharacter {
 public:
 	Player();
 	~Player();
 
 	//初期化
-	void Initialize(Model* modelBody, Model* modelHead, Model* modelL_arm, Model* modelR_arm);
+	void Initialize(const std::vector<Model*>& models) override;
 
 	//更新
-	void Update();
+	void Update() override;
 
 	//描画
-	void Draw(const ViewProjection& viewProjection);
+	void Draw(const ViewProjection& viewProjection) override;
 
 	const WorldTransform& GetWorldTransform() { return worldTransformBase_; }
 
@@ -26,6 +27,11 @@ public:
 	}
 
 private:
+
+	const int kModelIndexBody = 0;
+	const int kModelIndexHead = 1;
+	const int kModelIndexL_arm = 2;
+	const int kModelIndexR_arm = 3;
 
 	//浮遊ギミック初期化
 	void InitializeFloatingGimmick();
@@ -48,12 +54,7 @@ private:
 	WorldTransform worldTransformHead_;
 	WorldTransform worldTransformL_arm_;
 	WorldTransform worldTransformR_arm_;
-	//モデル
-	Model* modelFighterBody_ = nullptr;
-	Model* modelFighterHead_ = nullptr;
-	Model* modelFighterL_arm_ = nullptr;
-	Model* modelFighterR_arm_ = nullptr;
-
+	
 	//カメラのビュープロジェクション
 	const ViewProjection* viewProjection_ = nullptr;
 

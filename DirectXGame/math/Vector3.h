@@ -7,6 +7,12 @@ struct Vector3 final {
 	float x;
 	float y;
 	float z;
+
+	Vector3& operator*=(float s) { x *= s; y *= s; z *= s; return *this; }
+	Vector3& operator-=(const Vector3& v) { x -= v.x;  y -= v.y; z -= v.z; return *this; }
+	Vector3& operator+=(const Vector3& v) { x += v.x;  y += v.y; z += v.z; return *this; }
+	Vector3& operator/=(float s) { x /= s; y /= s; z /= s; return *this; }
+
 };
 
 // 直線
@@ -79,3 +85,5 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 Vector3 Perpendicular(const Vector3& vector);
 
 void ClampAABB(AABB& aabb);
+
+
