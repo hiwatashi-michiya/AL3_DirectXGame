@@ -76,6 +76,9 @@ private:
 
 	int attackFrame = 0;
 
+	//調整項目の適用
+	void ApplyGlobalVariables();
+
 	//ワールド変換データ
 	WorldTransform worldTransformBase_;
 	WorldTransform worldTransformBody_;

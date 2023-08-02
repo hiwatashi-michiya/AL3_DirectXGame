@@ -21,10 +21,7 @@ void Player::Initialize(const std::vector<Model*>& models) {
 	globalVariables = GlobalVariables::GetInstance();
 	const char* groupName = "Player";
 	//グループを追加
-	GlobalVariables::GetInstance()->CreateGroup(groupName);
-	globalVariables->SetValue(groupName, "Test int", 90);
-	globalVariables->SetValue(groupName, "Test float", 12.5f);
-	globalVariables->SetValue(groupName, "Test Vector3", Vector3(1.0f,2.0f,3.0f));
+	GlobalVariables::GetInstance()->CreateGroup(groupName);	
 
 	//ワールド変換の初期化
 	worldTransformBase_.Initialize();
@@ -51,6 +48,10 @@ void Player::Initialize(const std::vector<Model*>& models) {
 	worldTransformWeapon_.Initialize();
 	worldTransformWeapon_.parent_ = &worldTransformBody_;
 	worldTransformWeapon_.translation_.y = 3.0f;
+
+	globalVariables->AddItem(groupName, "Head Translation", worldTransformHead_.translation_);
+	globalVariables->AddItem(groupName, "ArmL Translation", worldTransformL_arm_.translation_);
+	globalVariables->AddItem(groupName, "ArmR Translation", worldTransformR_arm_.translation_);
 
 	//浮遊ギミック初期化
 	InitializeFloatingGimmick();
@@ -80,6 +81,8 @@ void Player::Update() {
 	ImGui::End();
 
 #endif // _DEBUG
+
+	ApplyGlobalVariables();
 
 	if (behaviorRequest_) {
 		//振る舞いを変更する
@@ -235,4 +238,15 @@ void Player::BehaviorAttackInitialize() {
 	worldTransformR_arm_.rotation_.x = -1.57f;
 	worldTransformWeapon_.rotation_.x = 1.57f;
 	worldTransformWeapon_.translation_.y = 3.0f;
+}
+
+void Player::ApplyGlobalVariables() {
+
+	GlobalVariables* globalVariables;
+	globalVariables = GlobalVariables::GetInstance();
+	const char* groupName = "Player";
+	worldTransformHead_.translation_ = globalVariables->GetVector3Value(groupName, "Head Translation");
+	worldTransformL_arm_.translation_ = globalVariables->GetVector3Value(groupName, "ArmL Translation");
+	worldTransformR_arm_.translation_ = globalVariables->GetVector3Value(groupName, "ArmR Translation");
+
 }

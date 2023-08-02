@@ -1,11 +1,19 @@
 {
     "Player": {
-        "Test Vector3": [
-            2.799999952316284,
-            2.0,
-            3.0
+        "ArmL Translation": [
+            -1.0,
+            2.5,
+            0.0
         ],
-        "Test float": 64.58300018310547,
-        "Test int": 72
+        "ArmR Translation": [
+            1.0,
+            2.5,
+            0.0
+        ],
+        "Head Translation": [
+            0.0,
+            10.0,
+            0.0
+        ]
     }
 }

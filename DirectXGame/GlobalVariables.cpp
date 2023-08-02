@@ -60,6 +60,76 @@ void GlobalVariables::SetValue(
 
 }
 
+void GlobalVariables::AddItem(const std::string& groupName,
+	const std::string& key, int32_t value) {
+
+	Group& group = datas_[groupName];
+	if (group.items.find(key) == group.items.end()) {
+		SetValue(groupName, key, value);
+	}
+
+}
+
+void GlobalVariables::AddItem(const std::string& groupName,
+	const std::string& key, float value) {
+
+	Group& group = datas_[groupName];
+	if (group.items.find(key) == group.items.end()) {
+		SetValue(groupName, key, value);
+	}
+
+}
+
+void GlobalVariables::AddItem(const std::string& groupName,
+	const std::string& key, const Vector3& value) {
+
+	Group& group = datas_[groupName];
+	if (group.items.find(key) == group.items.end()) {
+		SetValue(groupName, key, value);
+	}
+
+}
+
+int32_t GlobalVariables::GetIntValue(const std::string& groupName, const std::string& key) const {
+
+	//指定グループが存在している
+	assert(&datas_.at(groupName));
+	//グループの参照を取得
+	const Group& group = datas_.at(groupName);
+	//指定グループに指定のキーが存在している
+	assert(&group.items.at(key));
+	//指定グループから指定のキーの値を取得
+	const Item& item = group.items.at(key);
+	return std::get<int32_t>(item.value);
+
+}
+float GlobalVariables::GetFloatValue(const std::string& groupName, const std::string& key) const {
+
+	// 指定グループが存在している
+	assert(&datas_.at(groupName));
+	// グループの参照を取得
+	const Group& group = datas_.at(groupName);
+	// 指定グループに指定のキーが存在している
+	assert(&group.items.at(key));
+	// 指定グループから指定のキーの値を取得
+	const Item& item = group.items.at(key);
+	return std::get<float>(item.value);
+
+}
+Vector3 GlobalVariables::GetVector3Value(const std::string& groupName, const std::string& key) const {
+
+	// 指定グループが存在している
+	assert(&datas_.at(groupName));
+	// グループの参照を取得
+	const Group& group = datas_.at(groupName);
+	// 指定グループに指定のキーが存在している
+	assert(&group.items.at(key));
+	// 指定グループから指定のキーの値を取得
+	const Item& item = group.items.at(key);
+	return std::get<Vector3>(item.value);
+
+}
+
 void GlobalVariables::Update() {
 
 	if (!ImGui::Begin("Global Variables", nullptr, ImGuiWindowFlags_MenuBar)) {
@@ -203,5 +273,92 @@ void GlobalVariables::SaveFile(const std::string& groupName) {
 	ofs << std::setw(4) << root << std::endl;
 	//ファイルを閉じる
 	ofs.close();
+
+}
+
+void GlobalVariables::LoadFiles() {
+
+	std::filesystem::path dir(kDirectoryPath);
+	//ディレクトリが無ければスキップする
+	if (!std::filesystem::exists(dir)) {
+		return;
+	}
+
+	std::filesystem::directory_iterator dir_it(kDirectoryPath);
+	for (const std::filesystem::directory_entry& entry : dir_it) {
+
+		//ファイルパスを取得
+		const std::filesystem::path& filePath = entry.path();
+
+		//ファイル拡張子を取得
+		std::string extension = filePath.extension().string();
+		//.jsonファイル以外はスキップ
+		if (extension.compare(".json") != 0) {
+			continue;
+		}
+
+		//ファイル読み込み
+		LoadFile(filePath.stem().string());
+
+	}
+
+}
+
+void GlobalVariables::LoadFile(const std::string& groupName) {
+
+	//読み込むJSONファイルのフルパスを合成する
+	std::string filePath = kDirectoryPath + groupName + ".json";
+	//読み込み用ファイルストリーム
+	std::ifstream ifs;
+	//ファイルを読み込み用に開く
+	ifs.open(filePath);
+
+	//ファイルオープン失敗したら表示
+	if (ifs.fail()) {
+		std::string message = "Failed open data file for load.";
+		MessageBoxA(nullptr, message.c_str(), "GlobalVariables", 0);
+		assert(0);
+		return;
+	}
+
+	nlohmann::json root;
+
+	//json文字列からjsonのデータ構造に展開
+	ifs >> root;
+	//ファイルを閉じる
+	ifs.close();
+	//グループを検索
+	nlohmann::json::iterator itGroup = root.find(groupName);
+	//未登録チェック
+	assert(itGroup != root.end());
+
+	//各アイテムについて
+	for (nlohmann::json::iterator itItem = itGroup->begin(); itItem != itGroup->end(); ++itItem) {
+		
+		//アイテム名を取得
+		const std::string& itemName = itItem.key();
+
+		//int32_t型の値を保持していれば
+		if (itItem->is_number_integer()) {
+			//int型の値を登録
+			int32_t value = itItem->get<int32_t>();
+			SetValue(groupName, itemName, value);
+		}
+
+		//float型の値を保持していれば
+		else if (itItem->is_number_float()) {
+			//float型の値を登録
+			double value = itItem->get<double>();
+			SetValue(groupName, itemName, static_cast<float>(value));
+		}
+
+		//要素数3の配列であれば
+		else if (itItem->is_array() && itItem->size() == 3) {
+			//float型のjson配列登録
+			Vector3 value = {itItem->at(0), itItem->at(1), itItem->at(2)};
+			SetValue(groupName, itemName, value);
+		}
+
+	}
 
 }
