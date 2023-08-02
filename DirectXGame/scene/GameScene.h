@@ -15,6 +15,7 @@
 #include "Ground.h"
 #include "FollowCamera.h"
 #include "Enemy.h"
+#include "GlobalVariables.h"
 
 /// <summary>
 /// ゲームシーン
@@ -51,6 +52,7 @@ private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
 	Audio* audio_ = nullptr;
+	GlobalVariables* globalVariables_ = nullptr;
 
 	/// <summary>
 	/// ゲームシーン用

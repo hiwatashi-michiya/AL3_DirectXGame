@@ -81,8 +81,6 @@ void Player::Update() {
 
 #endif // _DEBUG
 
-	
-
 	if (behaviorRequest_) {
 		//振る舞いを変更する
 		behavior_ = behaviorRequest_.value();

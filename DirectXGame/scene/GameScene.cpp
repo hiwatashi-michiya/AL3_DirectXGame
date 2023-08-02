@@ -12,6 +12,7 @@ void GameScene::Initialize() {
 	dxCommon_ = DirectXCommon::GetInstance();
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
+	globalVariables_ = GlobalVariables::GetInstance();
 
 	viewProjection_.Initialize();
 	viewProjection_.translation_.y = 5.0f;

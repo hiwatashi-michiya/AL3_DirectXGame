@@ -4,6 +4,7 @@
 #include <string>
 #include <Vector3.h>
 #include <map>
+#include <fstream>
 
 /// <summary>
 /// グローバル変数
@@ -27,6 +28,9 @@ public:
 	//全データ
 	std::map<std::string, Group> datas_;
 
+	//グローバル変数の保存先ファイルパス
+	const std::string kDirectoryPath = "Resources/GlobalVariables/";
+
 	/// <summary>
 	/// グループの作成
 	/// </summary>
@@ -44,6 +48,12 @@ public:
 	/// 毎フレーム処理
 	/// </summary>
 	void Update();
+
+	/// <summary>
+	/// ファイルに書き出し
+	/// </summary>
+	/// <param name="groupName">グループ</param>
+	void SaveFile(const std::string& groupName);
 
 private:
 	GlobalVariables() = default;
