@@ -19,6 +19,9 @@ void Enemy::Initialize(const std::vector<Model*>& models) {
 	worldTransformR_arm_.translation_.y = 1.0f;
 	worldTransformR_arm_.parent_ = &worldTransformBody_;
 
+	SetCollisionAttribute(0x00000002);
+	SetCollisionMask(0xfffffffd);
+
 }
 
 void Enemy::Update() {
@@ -52,5 +55,21 @@ void Enemy::Draw(const ViewProjection& viewProjection) {
 	models_[kModelIndexBody]->Draw(worldTransformBody_, viewProjection);
 	models_[kModelIndexL_arm]->Draw(worldTransformL_arm_, viewProjection);
 	models_[kModelIndexR_arm]->Draw(worldTransformR_arm_, viewProjection);
+
+}
+
+void Enemy::OnCollision() {
+
+}
+
+Vector3 Enemy::GetWorldPosition() {
+
+	Vector3 worldPos;
+
+	worldPos.x = worldTransformBody_.matWorld_.m[3][0];
+	worldPos.y = worldTransformBody_.matWorld_.m[3][1];
+	worldPos.z = worldTransformBody_.matWorld_.m[3][2];
+
+	return worldPos;
 
 }

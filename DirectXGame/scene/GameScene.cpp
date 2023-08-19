@@ -58,6 +58,8 @@ void GameScene::Initialize() {
 	//自キャラに追従カメラをセット
 	player_->SetViewProjection(&followCamera_->GetViewProjection());
 
+	collisionManager_ = std::make_unique<CollisionManager>();
+
 	AxisIndicator::GetInstance()->SetVisible(true);
 	AxisIndicator::GetInstance()->SetTargetViewProjection(&viewProjection_);
 
@@ -68,6 +70,8 @@ void GameScene::Update() {
 	player_->Update();
 
 	enemy_->Update();
+
+	UpdateCollisionManager();
 
 	//追従カメラの更新
 	followCamera_->Update();
@@ -156,4 +160,24 @@ void GameScene::Draw() {
 	Sprite::PostDraw();
 
 #pragma endregion
+}
+
+void GameScene::UpdateCollisionManager() {
+
+	collisionManager_->ClearList();
+
+	// 自弾リストの取得
+	const std::list<Bullet*>& playerBullets = player_->GetBullets();
+	
+
+	// コライダーをリストに登録
+	collisionManager_->PushCollider(player_.get());
+	collisionManager_->PushCollider(enemy_.get());
+	// 自弾全てについて
+	for (Bullet* bullet : playerBullets) {
+		collisionManager_->PushCollider(bullet);
+	}
+
+	collisionManager_->CheckAllCollisions();
+
 }

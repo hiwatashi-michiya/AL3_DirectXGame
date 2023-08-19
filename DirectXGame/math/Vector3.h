@@ -86,4 +86,8 @@ Vector3 Perpendicular(const Vector3& vector);
 
 void ClampAABB(AABB& aabb);
 
+// 2点間の距離を求める関数
+float Distance(const Vector3& v1, const Vector3& v2);
 
+// 二つの物体の半径から当たり判定を計算する関数
+float HitRadius(float r1, float r2);

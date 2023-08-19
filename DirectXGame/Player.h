@@ -6,6 +6,10 @@
 #include <memory>
 #include "BaseCharacter.h"
 #include <optional>
+#include <list>
+#include <vector>
+#include "Bullet.h"
+#include "Collider.h"
 
 //振る舞い
 enum class Behavior {
@@ -13,7 +17,7 @@ enum class Behavior {
 	kAttack, //攻撃中
 };
 
-class Player : public BaseCharacter {
+class Player : public BaseCharacter, public Collider {
 public:
 	Player();
 	~Player();
@@ -33,7 +37,16 @@ public:
 		viewProjection_ = viewProjection;
 	}
 
+	void OnCollision() override;
+
+	Vector3 GetWorldPosition() override;
+
+	// 弾
+	const std::list<Bullet*> GetBullets() { return bullets_; }
+
 private:
+
+	Input* input_ = nullptr;
 
 	const int kModelIndexBody = 0;
 	const int kModelIndexHead = 1;
@@ -78,6 +91,15 @@ private:
 
 	//調整項目の適用
 	void ApplyGlobalVariables();
+
+	//攻撃
+	void Attack();
+
+	//弾
+	std::list<Bullet*> bullets_;
+
+	//弾モデル
+	std::unique_ptr<Model> modelBullet_ = nullptr;
 
 	//ワールド変換データ
 	WorldTransform worldTransformBase_;

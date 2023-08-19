@@ -10,12 +10,23 @@
 
 Player::Player() {}
 
-Player::~Player() {}
+Player::~Player() {
+
+	//弾の解放
+	for (Bullet* bullet : bullets_) {
+		delete bullet;
+	}
+
+}
 
 void Player::Initialize(const std::vector<Model*>& models) {
 
 	//基底クラスの初期化
 	BaseCharacter::Initialize(models);
+
+	modelBullet_.reset(Model::CreateFromOBJ("playerBullet", true));
+
+	input_ = Input::GetInstance();
 
 	GlobalVariables* globalVariables;
 	globalVariables = GlobalVariables::GetInstance();
@@ -56,6 +67,9 @@ void Player::Initialize(const std::vector<Model*>& models) {
 	//浮遊ギミック初期化
 	InitializeFloatingGimmick();
 
+	SetCollisionAttribute(0x00000001);
+	SetCollisionMask(0xfffffffe);
+
 }
 
 void Player::Update() {
@@ -83,6 +97,16 @@ void Player::Update() {
 #endif // _DEBUG
 
 	ApplyGlobalVariables();
+
+	bullets_.remove_if([](Bullet* bullet) {
+		
+		if (bullet->IsDead()) {
+			delete bullet;
+			return true;
+		}
+
+		return false;
+	});
 
 	if (behaviorRequest_) {
 		//振る舞いを変更する
@@ -113,6 +137,11 @@ void Player::Update() {
 	
 	}
 
+	Attack();
+
+	for (Bullet* bullet : bullets_) {
+		bullet->Update();
+	}
 
 	//行数を定数バッファに転送
 	worldTransformBase_.UpdateMatrix();
@@ -133,6 +162,10 @@ void Player::Draw(const ViewProjection& viewProjection) {
 	models_[kModelIndexL_arm]->Draw(worldTransformL_arm_, viewProjection);
 	models_[kModelIndexR_arm]->Draw(worldTransformR_arm_, viewProjection);
 	
+	for (Bullet* bullet : bullets_) {
+		bullet->Draw(viewProjection);
+	}
+
 	if (behavior_ == Behavior::kAttack) {
 		models_[kModelIndexWeapon]->Draw(worldTransformWeapon_, viewProjection);
 	}
@@ -248,5 +281,43 @@ void Player::ApplyGlobalVariables() {
 	worldTransformHead_.translation_ = globalVariables->GetVector3Value(groupName, "Head Translation");
 	worldTransformL_arm_.translation_ = globalVariables->GetVector3Value(groupName, "ArmL Translation");
 	worldTransformR_arm_.translation_ = globalVariables->GetVector3Value(groupName, "ArmR Translation");
+
+}
+
+void Player::Attack() {
+
+	if (input_->TriggerKey(DIK_SPACE)) {
+
+		const float kBulletSpeed = 1.0f;
+
+		Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
+
+		velocity = TransformNormal(velocity, worldTransformBase_.matWorld_);
+
+		Bullet* newBullet = new Bullet();
+
+		std::vector<Model*> modelBullets{modelBullet_.get()};
+
+		newBullet->Initialize(modelBullets, worldTransformBase_.translation_, velocity);
+
+		bullets_.push_back(newBullet);
+
+	}
+
+}
+
+void Player::OnCollision() {
+
+}
+
+Vector3 Player::GetWorldPosition() {
+
+	Vector3 worldPos;
+
+	worldPos.x = worldTransformBase_.matWorld_.m[3][0];
+	worldPos.y = worldTransformBase_.matWorld_.m[3][1];
+	worldPos.z = worldTransformBase_.matWorld_.m[3][2];
+
+	return worldPos;
 
 }

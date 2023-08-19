@@ -4,8 +4,9 @@
 #include <WorldTransform.h>
 #include <ViewProjection.h>
 #include <vector>
+#include "Collider.h"
 
-class Enemy : public BaseCharacter {
+class Enemy : public BaseCharacter, public Collider {
 public:
 
 	// 初期化
@@ -16,6 +17,10 @@ public:
 
 	// 描画
 	void Draw(const ViewProjection& viewProjection) override;
+
+	void OnCollision() override;
+
+	Vector3 GetWorldPosition() override;
 
 private:
 

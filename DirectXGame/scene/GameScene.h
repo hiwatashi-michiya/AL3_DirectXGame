@@ -16,6 +16,7 @@
 #include "FollowCamera.h"
 #include "Enemy.h"
 #include "GlobalVariables.h"
+#include "CollisionManager.h"
 
 /// <summary>
 /// ゲームシーン
@@ -92,6 +93,11 @@ private: // メンバ変数
 
 	//デバッグカメラ有効化フラグ
 	bool isDebugCameraActive_ = false;
+
+	// 衝突マネージャ
+	std::unique_ptr<CollisionManager> collisionManager_ = nullptr;
+
+	void UpdateCollisionManager();
 
 };
 
