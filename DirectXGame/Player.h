@@ -10,6 +10,8 @@
 #include <vector>
 #include "Bullet.h"
 #include "Collider.h"
+#include <TextureManager.h>
+#include <Audio.h>
 
 //振る舞い
 enum class Behavior {
@@ -37,22 +39,37 @@ public:
 		viewProjection_ = viewProjection;
 	}
 
-	void OnCollision() override;
+	void OnCollision(Collider* collider) override;
 
 	Vector3 GetWorldPosition() override;
 
 	// 弾
 	const std::list<Bullet*> GetBullets() { return bullets_; }
 
+	float GetBurstRadius() { return kBurstRadius; }
+
+	void BurstAttack();
+
+	//バーストのゲッターとセッター
+	bool GetIsBurst() { return isBurst_; }
+
+	void SetIsBurst(bool flag) { isBurst_ = flag; }
+
+	//無敵中かどうかのゲッター
+	bool GetIsInvincible() { return isInvincible_; }
+
 private:
 
 	Input* input_ = nullptr;
+	Audio* audio_ = nullptr;
 
 	const int kModelIndexBody = 0;
 	const int kModelIndexHead = 1;
 	const int kModelIndexL_arm = 2;
 	const int kModelIndexR_arm = 3;
 	const int kModelIndexWeapon = 4;
+
+	const float kBurstRadius = 20.0f;
 
 	//振る舞い
 	Behavior behavior_ = Behavior::kRoot;
@@ -95,11 +112,36 @@ private:
 	//攻撃
 	void Attack();
 
+	//クールタイム
+	const int32_t kCoolTime = 10;
+
+	//バースト攻撃をしたか
+	bool isBurst_ = false;
+
+	//バーストクールタイム
+	const int32_t kBurstCoolTime = 600;
+
+	int32_t burstCoolTimer_ = 0;
+
+	//無敵時間かどうか
+	bool isInvincible_ = false;
+
+	//無敵時間
+	const int kInvincibleTime = 180;
+
+	//ダメージ受けたときの無敵時間
+	int32_t invincibleTimer_ = 0;
+
+	//弾発射のクールタイム
+	int32_t coolTimer_ = 0;
+
 	//弾
 	std::list<Bullet*> bullets_;
 
 	//弾モデル
 	std::unique_ptr<Model> modelBullet_ = nullptr;
+
+	std::unique_ptr<Model> modelBurst_ = nullptr;
 
 	//ワールド変換データ
 	WorldTransform worldTransformBase_;
@@ -108,9 +150,26 @@ private:
 	WorldTransform worldTransformL_arm_;
 	WorldTransform worldTransformR_arm_;
 	WorldTransform worldTransformWeapon_;
+	WorldTransform worldTransformBurst_;
 
 	//カメラのビュープロジェクション
 	const ViewProjection* viewProjection_ = nullptr;
+
+	int32_t bulletColor_ = Type::C_RED;
+
+	const int32_t kColorRed = 0;
+	const int32_t kColorGreen = 1;
+	const int32_t kColorBlue = 2;
+
+	uint32_t colorTex_[3]{};
+
+	uint32_t playerColorTex_[3]{};
+
+	uint32_t burstTex_ = 0u;
+
+	uint32_t playerTex_ = 0u;
+
+	uint32_t changeColorSE_ = 0u;
 
 };
 

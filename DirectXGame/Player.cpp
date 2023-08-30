@@ -3,6 +3,7 @@
 #include <cassert>
 #include <math.h>
 #include "GlobalVariables.h"
+#include "Score.h"
 
 #ifdef _DEBUG
 #include <imgui.h>
@@ -25,14 +26,16 @@ void Player::Initialize(const std::vector<Model*>& models) {
 	BaseCharacter::Initialize(models);
 
 	modelBullet_.reset(Model::CreateFromOBJ("playerBullet", true));
+	modelBurst_.reset(Model::CreateFromOBJ("burst", true));
 
 	input_ = Input::GetInstance();
+	audio_ = Audio::GetInstance();
 
-	GlobalVariables* globalVariables;
-	globalVariables = GlobalVariables::GetInstance();
-	const char* groupName = "Player";
-	//グループを追加
-	GlobalVariables::GetInstance()->CreateGroup(groupName);	
+	//GlobalVariables* globalVariables;
+	//globalVariables = GlobalVariables::GetInstance();
+	//const char* groupName = "Player";
+	////グループを追加
+	//GlobalVariables::GetInstance()->CreateGroup(groupName);	
 
 	//ワールド変換の初期化
 	worldTransformBase_.Initialize();
@@ -60,12 +63,32 @@ void Player::Initialize(const std::vector<Model*>& models) {
 	worldTransformWeapon_.parent_ = &worldTransformBody_;
 	worldTransformWeapon_.translation_.y = 3.0f;
 
-	globalVariables->AddItem(groupName, "Head Translation", worldTransformHead_.translation_);
-	globalVariables->AddItem(groupName, "ArmL Translation", worldTransformL_arm_.translation_);
-	globalVariables->AddItem(groupName, "ArmR Translation", worldTransformR_arm_.translation_);
+	//範囲攻撃
+	worldTransformBurst_.Initialize();
+	worldTransformBurst_.parent_ = &worldTransformBase_;
+	worldTransformBurst_.scale_ *= kBurstRadius;
+	worldTransformBurst_.UpdateMatrix();
+
+	//globalVariables->AddItem(groupName, "Head Translation", worldTransformHead_.translation_);
+	//globalVariables->AddItem(groupName, "ArmL Translation", worldTransformL_arm_.translation_);
+	//globalVariables->AddItem(groupName, "ArmR Translation", worldTransformR_arm_.translation_);
 
 	//浮遊ギミック初期化
 	InitializeFloatingGimmick();
+
+	colorTex_[kColorRed] = TextureManager::Load("burst/alphared.png");
+	colorTex_[kColorGreen] = TextureManager::Load("burst/alphagreen.png");
+	colorTex_[kColorBlue] = TextureManager::Load("burst/alphablue.png");
+
+	playerColorTex_[kColorRed] = TextureManager::Load("player_body/player_red.png");
+	playerColorTex_[kColorGreen] = TextureManager::Load("player_body/player_green.png");
+	playerColorTex_[kColorBlue] = TextureManager::Load("player_body/player_blue.png");
+
+	burstTex_ = colorTex_[kColorRed];
+
+	playerTex_ = playerColorTex_[kColorRed];
+
+	changeColorSE_ = audio_->LoadWave("audio/changecolor.wav");
 
 	SetCollisionAttribute(0x00000001);
 	SetCollisionMask(0xfffffffe);
@@ -74,29 +97,29 @@ void Player::Initialize(const std::vector<Model*>& models) {
 
 void Player::Update() {
 
-	#ifdef _DEBUG
+//	#ifdef _DEBUG
+//
+//	ImGui::Begin("weapon");
+//	ImGui::DragFloat3("translation", &worldTransformWeapon_.translation_.x, 0.01f);
+//	ImGui::DragFloat3("rotation", &worldTransformWeapon_.rotation_.x, 0.01f);
+//	ImGui::End();
+//
+//	ImGui::Begin("Arm");
+//	ImGui::DragFloat3("L rotation", &worldTransformL_arm_.rotation_.x, 0.01f);
+//	ImGui::DragFloat3("R rotation", &worldTransformR_arm_.rotation_.x, 0.01f);
+//	ImGui::End();
+//
+//	ImGui::Begin("Player");
+//	ImGui::SliderFloat3("Head Translation", &worldTransformHead_.translation_.x, -100.0f, 100.0f);
+//	ImGui::SliderFloat3("ArmL Translation", &worldTransformL_arm_.translation_.x, -100.0f, 100.0f);
+//	ImGui::SliderFloat3("ArmR Translation", &worldTransformR_arm_.translation_.x, -100.0f, 100.0f);
+//	ImGui::SliderInt("cycle", &cycle, 10, 300);
+//	ImGui::SliderFloat("swing", &swing, 0.1f, 50.0f);
+//	ImGui::End();
+//
+//#endif // _DEBUG
 
-	ImGui::Begin("weapon");
-	ImGui::DragFloat3("translation", &worldTransformWeapon_.translation_.x, 0.01f);
-	ImGui::DragFloat3("rotation", &worldTransformWeapon_.rotation_.x, 0.01f);
-	ImGui::End();
-
-	ImGui::Begin("Arm");
-	ImGui::DragFloat3("L rotation", &worldTransformL_arm_.rotation_.x, 0.01f);
-	ImGui::DragFloat3("R rotation", &worldTransformR_arm_.rotation_.x, 0.01f);
-	ImGui::End();
-
-	ImGui::Begin("Player");
-	ImGui::SliderFloat3("Head Translation", &worldTransformHead_.translation_.x, -100.0f, 100.0f);
-	ImGui::SliderFloat3("ArmL Translation", &worldTransformL_arm_.translation_.x, -100.0f, 100.0f);
-	ImGui::SliderFloat3("ArmR Translation", &worldTransformR_arm_.translation_.x, -100.0f, 100.0f);
-	ImGui::SliderInt("cycle", &cycle, 10, 300);
-	ImGui::SliderFloat("swing", &swing, 0.1f, 50.0f);
-	ImGui::End();
-
-#endif // _DEBUG
-
-	ApplyGlobalVariables();
+	/*ApplyGlobalVariables();*/
 
 	bullets_.remove_if([](Bullet* bullet) {
 		
@@ -107,6 +130,18 @@ void Player::Update() {
 
 		return false;
 	});
+
+	if (isInvincible_) {
+
+		if (--invincibleTimer_ <= 0) {
+			isInvincible_ = false;
+		}
+
+	}
+
+	if (burstCoolTimer_ > 0) {
+		burstCoolTimer_--;
+	}
 
 	if (behaviorRequest_) {
 		//振る舞いを変更する
@@ -137,8 +172,6 @@ void Player::Update() {
 	
 	}
 
-	Attack();
-
 	for (Bullet* bullet : bullets_) {
 		bullet->Update();
 	}
@@ -150,20 +183,26 @@ void Player::Update() {
 	worldTransformL_arm_.UpdateMatrix();
 	worldTransformR_arm_.UpdateMatrix();
 	worldTransformWeapon_.UpdateMatrix();
-	
+	worldTransformBurst_.UpdateMatrix();
 
 }
 
 void Player::Draw(const ViewProjection& viewProjection) {
 
 	//3Dモデルを描画
-	models_[kModelIndexBody]->Draw(worldTransformBody_, viewProjection);
-	models_[kModelIndexHead]->Draw(worldTransformHead_, viewProjection);
-	models_[kModelIndexL_arm]->Draw(worldTransformL_arm_, viewProjection);
-	models_[kModelIndexR_arm]->Draw(worldTransformR_arm_, viewProjection);
+	if (invincibleTimer_ % 2 == 0) {
+		models_[kModelIndexBody]->Draw(worldTransformBody_, viewProjection, playerTex_);
+		models_[kModelIndexHead]->Draw(worldTransformHead_, viewProjection, playerTex_);
+	}
+	/*models_[kModelIndexL_arm]->Draw(worldTransformL_arm_, viewProjection);
+	models_[kModelIndexR_arm]->Draw(worldTransformR_arm_, viewProjection);*/
 	
 	for (Bullet* bullet : bullets_) {
 		bullet->Draw(viewProjection);
+	}
+
+	if (burstCoolTimer_ == 0) {
+		modelBurst_->Draw(worldTransformBurst_, viewProjection, burstTex_);
 	}
 
 	if (behavior_ == Behavior::kAttack) {
@@ -201,12 +240,16 @@ void Player::UpdateFloatingGimmick() {
 
 void Player::BehaviorRootUpdate() {
 
+	if (coolTimer_ > 0) {
+		coolTimer_--;
+	}
+
 	XINPUT_STATE joyState;
 
 	if (Input::GetInstance()->GetJoystickState(0, joyState)) {
 
 		// 速さ
-		const float speed = 0.3f;
+		const float speed = 0.7f;
 
 		// 移動量。Lスティックの入力を取る
 		Vector3 move = {float(joyState.Gamepad.sThumbLX), 0.0f, float(joyState.Gamepad.sThumbLY)};
@@ -221,12 +264,70 @@ void Player::BehaviorRootUpdate() {
 		// 移動
 		worldTransformBase_.translation_ = Add(worldTransformBase_.translation_, move);
 
+		if (worldTransformBase_.translation_.x > 100.0f) {
+			worldTransformBase_.translation_.x = 100.0f;
+		}
+		else if (worldTransformBase_.translation_.x < -100.0f) {
+			worldTransformBase_.translation_.x = -100.0f;
+		}
+		
+		if (worldTransformBase_.translation_.z > 100.0f) {
+			worldTransformBase_.translation_.z = 100.0f;
+		} else if (worldTransformBase_.translation_.z < -100.0f) {
+			worldTransformBase_.translation_.z = -100.0f;
+		}
+
 		// 回転
-		worldTransformBase_.rotation_.y = float(std::atan2(double(move.x), double(move.z)));
+		if (joyState.Gamepad.sThumbLX != 0 || joyState.Gamepad.sThumbLY != 0) {
+			worldTransformBase_.rotation_.y = float(std::atan2(double(move.x), double(move.z)));
+		}
+		
 	}
 
-	if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) {
-		behaviorRequest_ = Behavior::kAttack;
+	if ((input_->TriggerKey(DIK_1) || (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_B))) {
+
+		if (GetColorType() != Type::C_RED) {
+			SetColorType(kColorRed);
+			bulletColor_ = Type::C_RED;
+			burstTex_ = colorTex_[Type::C_RED];
+			playerTex_ = playerColorTex_[Type::C_RED];
+			audio_->PlayWave(changeColorSE_);
+		}
+
+		
+	}
+
+	else if ((input_->TriggerKey(DIK_2) || (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_A))) {
+
+		if (GetColorType() != Type::C_GREEN) {
+			SetColorType(kColorGreen);
+			bulletColor_ = Type::C_GREEN;
+			burstTex_ = colorTex_[Type::C_GREEN];
+			playerTex_ = playerColorTex_[Type::C_GREEN];
+			audio_->PlayWave(changeColorSE_);
+		}
+
+	}
+
+	else if ((input_->TriggerKey(DIK_3) || (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_X))) {
+
+		if (GetColorType() != Type::C_BLUE) {
+			SetColorType(kColorBlue);
+			bulletColor_ = Type::C_BLUE;
+			burstTex_ = colorTex_[Type::C_BLUE];
+			playerTex_ = playerColorTex_[Type::C_BLUE];
+			audio_->PlayWave(changeColorSE_);
+		}
+
+	}
+
+	if ((input_->TriggerKey(DIK_SPACE) || (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER))&& coolTimer_ == 0) {
+		Attack();
+		coolTimer_ = kCoolTime;
+	}
+
+	if ((input_->TriggerKey(DIK_Q) || (joyState.Gamepad.bRightTrigger != 0)) && burstCoolTimer_ == 0) {
+		BurstAttack();
 	}
 
 	// 浮遊ギミック更新
@@ -286,27 +387,41 @@ void Player::ApplyGlobalVariables() {
 
 void Player::Attack() {
 
-	if (input_->TriggerKey(DIK_SPACE)) {
+	const float kBulletSpeed = 1.0f;
 
-		const float kBulletSpeed = 1.0f;
+	Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
 
-		Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
+	velocity = TransformNormal(velocity, worldTransformBase_.matWorld_);
 
-		velocity = TransformNormal(velocity, worldTransformBase_.matWorld_);
+	Bullet* newBullet = new Bullet();
 
-		Bullet* newBullet = new Bullet();
+	std::vector<Model*> modelBullets{modelBullet_.get()};
 
-		std::vector<Model*> modelBullets{modelBullet_.get()};
+	newBullet->Initialize(modelBullets, worldTransformBase_.translation_, velocity, bulletColor_);
 
-		newBullet->Initialize(modelBullets, worldTransformBase_.translation_, velocity);
+	bullets_.push_back(newBullet);
 
-		bullets_.push_back(newBullet);
+}
+
+void Player::BurstAttack() {
+
+	//範囲攻撃開始
+	if (burstCoolTimer_ == 0) {
+
+		isBurst_ = true;
+
+		burstCoolTimer_ = kBurstCoolTime;
 
 	}
 
 }
 
-void Player::OnCollision() {
+void Player::OnCollision(Collider* collider) {
+
+	SetColorType(collider->GetColorType());
+
+	isInvincible_ = true;
+	invincibleTimer_ = kInvincibleTime;
 
 }
 

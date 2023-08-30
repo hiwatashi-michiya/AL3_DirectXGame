@@ -2,13 +2,19 @@
 #include <Vector3.h>
 #include <stdint.h>
 
+enum Type {
+	C_RED,
+	C_GREEN,
+	C_BLUE
+};
+
 class Collider {
 public:
 	Collider();
 	~Collider();
 
 	// 衝突時に呼ばれる関数
-	virtual void OnCollision();
+	virtual void OnCollision(Collider* collider);
 
 	// ワールド座標を取得(純粋仮想関数)
 	virtual Vector3 GetWorldPosition() = 0;
@@ -33,6 +39,12 @@ public:
 	// 衝突マスク(相手)を設定
 	void SetCollisionMask(uint32_t collisionMask) { collisionMask_ = collisionMask; }
 
+	//色を取得
+	int32_t GetColorType() { return colorType_; }
+
+	//色を設定
+	void SetColorType(int32_t colorType) { colorType_ = colorType; }
+
 private:
 	// 衝突半径
 	float radius_ = 1.0f;
@@ -41,4 +53,8 @@ private:
 	uint32_t collisionAttribute_ = 0xffffffff;
 	// 衝突マスク(相手)
 	uint32_t collisionMask_ = 0xffffffff;
+
+	//カラータイプ
+	int32_t colorType_ = Type::C_RED;
+
 };

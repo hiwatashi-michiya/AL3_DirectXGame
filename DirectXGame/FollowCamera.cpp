@@ -8,6 +8,8 @@ void FollowCamera::Initialize() {
 
 	viewProjection_.Initialize();
 	viewProjection_.farZ = 2000.0f;
+	viewProjection_.rotation_.x = 3.14f / 6.0f;
+
 }
 
 void FollowCamera::Update() {
@@ -20,6 +22,8 @@ void FollowCamera::Update() {
 		float rotateSpeed = 0.001f;
 
 		viewProjection_.rotation_.y += (float)joyState.Gamepad.sThumbRX * rotateSpeed * rotateSpeed;
+		viewProjection_.rotation_.x -= (float)joyState.Gamepad.sThumbRY * rotateSpeed * rotateSpeed / 3.0f;
+		viewProjection_.rotation_.x = Clamp(viewProjection_.rotation_.x, 3.14f / 12.0f, 3.14f / 6.0f);
 
 	}
 
@@ -27,7 +31,7 @@ void FollowCamera::Update() {
 	if (target_) {
 
 		//追従対象からカメラまでのオフセット
-		Vector3 offset = {0.0f, 5.0f, -30.0f};
+		Vector3 offset = {0.0f, 30.0f, -60.0f};
 
 		Matrix4x4 matRotate = MakeRotateYMatrix(viewProjection_.rotation_.y);
 

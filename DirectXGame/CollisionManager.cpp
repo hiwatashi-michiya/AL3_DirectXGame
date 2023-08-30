@@ -46,8 +46,8 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
 	// 球と球の交差判定
 	if (Distance(posA, posB) <= HitRadius(colliderA->GetRadius(), colliderB->GetRadius())) {
 		// コライダーAの衝突時コールバックを呼び出す
-		colliderA->OnCollision();
+		colliderA->OnCollision(colliderB);
 		// コライダーBの衝突時コールバックを呼び出す
-		colliderB->OnCollision();
+		colliderB->OnCollision(colliderA);
 	}
 }

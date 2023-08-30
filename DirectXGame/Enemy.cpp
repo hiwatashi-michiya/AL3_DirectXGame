@@ -1,4 +1,15 @@
 #include "Enemy.h"
+#include "GameScene.h"
+#include "Score.h"
+#include "Rand.h"
+
+Enemy::Enemy() {
+
+}
+
+Enemy::~Enemy() {
+
+}
 
 void Enemy::Initialize(const std::vector<Model*>& models) {
 
@@ -9,7 +20,11 @@ void Enemy::Initialize(const std::vector<Model*>& models) {
 	worldTransformBody_.Initialize();
 	worldTransformBody_.translation_.z = 20.0f;
 
-	worldTransformL_arm_.Initialize();
+	effect_ = std::make_unique<Effect>();
+	effect_->Initialize(30);
+	effect_->SetColor(GetColorType());
+
+	/*worldTransformL_arm_.Initialize();
 	worldTransformL_arm_.translation_.x = -1.5f;
 	worldTransformL_arm_.translation_.y = 1.0f;
 	worldTransformL_arm_.parent_ = &worldTransformBody_;
@@ -17,48 +32,141 @@ void Enemy::Initialize(const std::vector<Model*>& models) {
 	worldTransformR_arm_.Initialize();
 	worldTransformR_arm_.translation_.x = 1.5f;
 	worldTransformR_arm_.translation_.y = 1.0f;
-	worldTransformR_arm_.parent_ = &worldTransformBody_;
+	worldTransformR_arm_.parent_ = &worldTransformBody_;*/
+
+	colorTex_[kColorRed] = TextureManager::Load("enemy/enemy_red.png");
+	colorTex_[kColorGreen] = TextureManager::Load("enemy/enemy_green.png");
+	colorTex_[kColorBlue] = TextureManager::Load("enemy/enemy_blue.png");
+
+	enemyTex_ = colorTex_[kColorRed];
 
 	SetCollisionAttribute(0x00000002);
 	SetCollisionMask(0xfffffffd);
+	SetRadius(1.1f);
 
 }
 
 void Enemy::Update() {
 
-	{
+	if (isDead_) {
 
-		float rad = 3.14f / 60.0f;
-		worldTransformBody_.rotation_.y += rad;
+		effect_->Update();
 
-		if (worldTransformBody_.rotation_.y >= 6.28f) {
-			worldTransformBody_.rotation_.y = 0.0f;
+	}
+	else {
+
+		switch (GetColorType()) {
+		default:
+		case C_RED:
+		
+		{
+
+			Vector3 toPlayer = Subtract(
+			    gameScene_->GetPlayer()->GetWorldPosition(), worldTransformBody_.translation_);
+
+			toPlayer = Normalize(toPlayer);
+
+			// Y軸周り角度
+			worldTransformBody_.rotation_.y =
+			    float(std::atan2(double(toPlayer.x), double(toPlayer.z)));
+			
 		}
 
-		Vector3 move = {0.0f, 0.0f, 1.0f};
+			break;
 
-		move = TransformNormal(move, worldTransformBody_.matWorld_);
-		move /= 3.0f;
-		worldTransformBody_.translation_ += move;
+		case C_GREEN:
+
+			{
+
+			float rad = 3.14f / 120.0f;
+			worldTransformBody_.rotation_.y += rad;
+
+			if (worldTransformBody_.rotation_.y >= 6.28f) {
+				worldTransformBody_.rotation_.y = 0.0f;
+			}
+
+			Vector3 move = {0.0f, 0.0f, 0.5f};
+
+			move = TransformNormal(move, worldTransformBody_.matWorld_);
+			move /= 3.0f;
+			worldTransformBody_.translation_ += move;
+			}
+
+			break;
+
+		case C_BLUE:
+
+			{
+
+			float rad = -3.14f / 120.0f;
+			worldTransformBody_.rotation_.y += rad;
+
+			if (worldTransformBody_.rotation_.y <= -6.28f) {
+				worldTransformBody_.rotation_.y = 0.0f;
+			}
+
+			Vector3 move = {0.0f, 0.0f, 0.5f};
+
+			move = TransformNormal(move, worldTransformBody_.matWorld_);
+			move /= 2.0f;
+			worldTransformBody_.translation_ += move;
+		    }
+
+			break;
+
+		}
+
+		Attack();
 
 	}
 
 	worldTransform_.UpdateMatrix();
 	worldTransformBody_.UpdateMatrix();
-	worldTransformL_arm_.UpdateMatrix();
-	worldTransformR_arm_.UpdateMatrix();
+	/*worldTransformL_arm_.UpdateMatrix();
+	worldTransformR_arm_.UpdateMatrix();*/
 
 }
 
 void Enemy::Draw(const ViewProjection& viewProjection) {
 
-	models_[kModelIndexBody]->Draw(worldTransformBody_, viewProjection);
-	models_[kModelIndexL_arm]->Draw(worldTransformL_arm_, viewProjection);
-	models_[kModelIndexR_arm]->Draw(worldTransformR_arm_, viewProjection);
+	if (isDead_) {
+		effect_->Draw(viewProjection);
+	}
+	else {
+
+		models_[kModelIndexBody]->Draw(worldTransformBody_, viewProjection, enemyTex_);
+		/*models_[kModelIndexL_arm]->Draw(worldTransformL_arm_, viewProjection);
+		models_[kModelIndexR_arm]->Draw(worldTransformR_arm_, viewProjection);*/
+
+	}
 
 }
 
-void Enemy::OnCollision() {
+void Enemy::OnCollision(Collider* collider) {
+
+	Score* score;
+	score = Score::GetInstance();
+
+	SetColorType(collider->GetColorType());
+
+	enemyTex_ = colorTex_[GetColorType()];
+
+	if (--life_ <= 0) {
+
+		score->AddScore(100);
+
+		StartEffect();
+
+		isDead_ = true;
+	}
+	else {
+
+		score->AddScore(10);
+
+		worldTransformBody_.scale_ *= 1.2f;
+		SetRadius(GetRadius() * 1.2f);
+
+	}
 
 }
 
@@ -71,5 +179,71 @@ Vector3 Enemy::GetWorldPosition() {
 	worldPos.z = worldTransformBody_.matWorld_.m[3][2];
 
 	return worldPos;
+
+}
+
+void Enemy::Attack() {
+
+	switch (GetColorType()) {
+	default:
+	case C_RED:
+
+		break;
+
+	case C_GREEN:
+
+		break;
+
+	case C_BLUE:
+
+		break;
+	}
+
+	//一定間隔毎に弾を発射
+	if (--attackTimer_ <= 0 && !isDead_) {
+
+		const float kBulletSpeed = 1.0f;
+
+		Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
+
+		velocity = TransformNormal(velocity, worldTransformBody_.matWorld_);
+
+		EnemyBullet* newBullet = new EnemyBullet();
+
+		newBullet->Initialize(worldTransformBody_.translation_, velocity);
+
+		gameScene_->AddEnemyBullet(newBullet);
+
+		//タイマーリセット
+		attackTimer_ = kAttackTime;
+
+	}
+
+}
+
+void Enemy::Burst() {
+
+	StartEffect();
+
+	isDead_ = true;
+
+}
+
+void Enemy::SetStartPosition(Vector3 position) {
+
+	worldTransformBody_.translation_ = position;
+
+}
+
+void Enemy::UpdateColor() {
+
+	enemyTex_ = colorTex_[GetColorType()];
+
+}
+
+void Enemy::StartEffect() {
+
+	effect_->SetEffect(worldTransformBody_.translation_);
+	effect_->SetColor(GetColorType());
 
 }
