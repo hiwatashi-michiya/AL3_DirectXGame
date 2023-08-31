@@ -69,6 +69,12 @@ public: // メンバ関数
 
 	Player* GetPlayer() const { return player_.get(); }
 
+	void AddKillCount() { killCount_++; }
+
+	void ResetKillCount() { killCount_ = 0; }
+
+	void SetMagScoreTimer() { resetMagScoreTimer_ = kResetMagScoreTime; }
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -139,7 +145,14 @@ private: // メンバ変数
 	bool isWait = false;
 
 	// 待機タイマー
-	uint32_t waitTimer = 0;
+	int32_t waitTimer = 0;
+
+	int32_t killCount_ = 0;
+
+	//スコア倍率リセットまでのタイマー
+	const int32_t kResetMagScoreTime = 180;
+
+	int32_t resetMagScoreTimer_ = 0;
 
 	//ゲーム中の制限時間
 	GameTimer* gameTimer_ = nullptr;
@@ -196,6 +209,28 @@ private: // メンバ変数
 	//ゲームシーン切り替え
 	Scene currentScene_;
 	Scene nextScene_;
+
+	//UI
+	uint32_t pressTitleTex_ = 0u;
+	uint32_t pressIngameTex_ = 0u;
+	uint32_t changeColorTex_ = 0u;
+	uint32_t attackTex_ = 0u;
+	uint32_t burstTex_ = 0u;
+	uint32_t moveTex_ = 0u;
+	uint32_t titleTex_ = 0u;
+
+	std::unique_ptr<Sprite> spritePressTitle_;
+	std::unique_ptr<Sprite> spritePressIngame_;
+	std::unique_ptr<Sprite> spriteChangeColor_;
+	std::unique_ptr<Sprite> spriteAttack_;
+	std::unique_ptr<Sprite> spriteBurst_;
+	std::unique_ptr<Sprite> spriteMove_;
+	std::unique_ptr<Sprite> spriteTitle_;
+
+	//audio
+	uint32_t BGM_ = 0u;
+	uint32_t selectSE_ = 0u;
+	uint32_t gameoverSE_ = 0u;
 
 };
 

@@ -1,6 +1,9 @@
 #include "EnemyBullet.h"
+#include "Score.h"
 
 void EnemyBullet::Initialize(const Vector3& position, const Vector3& velocity) {
+
+	audio_ = Audio::GetInstance();
 
 	modelBullet_.reset(Model::CreateFromOBJ("enemybullet", true));
 
@@ -11,6 +14,9 @@ void EnemyBullet::Initialize(const Vector3& position, const Vector3& velocity) {
 
 	SetCollisionAttribute(0x00000002);
 	SetCollisionMask(0xfffffffd);
+
+	deadSE_ = audio_->LoadWave("audio/enemybulletdead.mp3");
+
 }
 
 void EnemyBullet::Update() {
@@ -33,6 +39,13 @@ void EnemyBullet::Draw(const ViewProjection& viewProjection) {
 void EnemyBullet::OnCollision(Collider* collider) {
 
 	SetColorType(collider->GetColorType());
+
+	Score* score;
+	score = Score::GetInstance();
+
+	score->AddScore(5);
+
+	audio_->PlayWave(deadSE_);
 
 	isDead_ = true;
 

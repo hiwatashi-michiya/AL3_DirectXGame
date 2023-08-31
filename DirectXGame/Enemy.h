@@ -9,6 +9,7 @@
 #include <list>
 #include "Effect.h"
 #include <memory>
+#include <Audio.h>
 
 // ゲームシーンの前方宣言
 class GameScene;
@@ -47,11 +48,16 @@ public:
 	//エフェクトの死亡フラグ取得
 	bool IsDeadEffect() const { return effect_->IsDead(); }
 
+	//スポーン演出フラグ取得
+	bool IsSpawnTime() const { return isSpawnTime_; }
+
 	void UpdateColor();
 
 	void Burst();
 
 private:
+
+	Audio* audio_ = nullptr;
 
 	const int kModelIndexBody = 0;
 	const int kModelIndexL_arm = 1;
@@ -74,10 +80,15 @@ private:
 
 	bool isEffectTime_ = false;
 
+	//スポーン演出
+	bool isSpawnTime_ = true;
+
+	int32_t spawnTimer_ = 30;
+
 	//攻撃
 	void Attack();
 
-	int32_t attackTimer_ = kAttackTime;
+	int32_t attackTimer_ ;
 
 	//体力
 	const int32_t kMaxLife = 3;
@@ -94,5 +105,8 @@ private:
 	uint32_t colorTex_[3]{};
 
 	uint32_t enemyTex_ = 0u;
+
+	uint32_t deadSE_ = 0u;
+	uint32_t hitSE_ = 0u;
 
 };

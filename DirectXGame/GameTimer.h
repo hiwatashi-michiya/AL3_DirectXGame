@@ -28,7 +28,7 @@ private:
 
 	bool isCount_ = true;
 
-	const int32_t kMaxGameTime = 600;
+	const int32_t kMaxGameTime = 60;
 
 	int32_t gameTimer_ = kMaxGameTime;
 

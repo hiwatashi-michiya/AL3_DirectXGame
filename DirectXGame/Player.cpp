@@ -27,6 +27,7 @@ void Player::Initialize(const std::vector<Model*>& models) {
 
 	modelBullet_.reset(Model::CreateFromOBJ("playerBullet", true));
 	modelBurst_.reset(Model::CreateFromOBJ("burst", true));
+	modelEffect_.reset(Model::CreateFromOBJ("bursteffect", true));
 
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
@@ -75,6 +76,13 @@ void Player::Initialize(const std::vector<Model*>& models) {
 	worldTransformArrow_.translation_.z = 2.0f;
 	worldTransformArrow_.UpdateMatrix();
 
+	//エフェクト
+	worldTransformEffect_.Initialize();
+	worldTransformEffect_.parent_ = &worldTransformBase_;
+	worldTransformEffect_.scale_.x = 0.0f;
+	worldTransformEffect_.scale_.z = 0.0f;
+	worldTransformEffect_.UpdateMatrix();
+
 	//globalVariables->AddItem(groupName, "Head Translation", worldTransformHead_.translation_);
 	//globalVariables->AddItem(groupName, "ArmL Translation", worldTransformL_arm_.translation_);
 	//globalVariables->AddItem(groupName, "ArmR Translation", worldTransformR_arm_.translation_);
@@ -95,6 +103,7 @@ void Player::Initialize(const std::vector<Model*>& models) {
 	playerTex_ = playerColorTex_[kColorRed];
 
 	changeColorSE_ = audio_->LoadWave("audio/changecolor.wav");
+	burstSE_ = audio_->LoadWave("audio/burst.mp3");
 
 	SetCollisionAttribute(0x00000001);
 	SetCollisionMask(0xfffffffe);
@@ -149,6 +158,20 @@ void Player::Update() {
 		burstCoolTimer_--;
 	}
 
+	if (isEffect_) {
+
+		if (++effectTimer_ >= kMaxEffectTime) {
+			effectTimer_ = 0;
+			isEffect_ = false;
+			worldTransformEffect_.scale_.x = 0.0f;
+			worldTransformEffect_.scale_.z = 0.0f;
+		}
+
+		worldTransformEffect_.scale_.x += kBurstRadius / 10.0f;
+		worldTransformEffect_.scale_.z += kBurstRadius / 10.0f;
+
+	}
+
 	if (behaviorRequest_) {
 		//振る舞いを変更する
 		behavior_ = behaviorRequest_.value();
@@ -191,6 +214,7 @@ void Player::Update() {
 	worldTransformWeapon_.UpdateMatrix();
 	worldTransformBurst_.UpdateMatrix();
 	worldTransformArrow_.UpdateMatrix();
+	worldTransformEffect_.UpdateMatrix();
 
 }
 
@@ -213,6 +237,10 @@ void Player::Draw(const ViewProjection& viewProjection) {
 
 	if (burstCoolTimer_ == 0) {
 		modelBurst_->Draw(worldTransformBurst_, viewProjection, burstTex_);
+	}
+
+	if (isEffect_) {
+		modelEffect_->Draw(worldTransformEffect_, viewProjection, burstTex_);
 	}
 
 	if (behavior_ == Behavior::kAttack) {
@@ -274,17 +302,18 @@ void Player::BehaviorRootUpdate() {
 		// 移動
 		worldTransformBase_.translation_ = Add(worldTransformBase_.translation_, move);
 
-		if (worldTransformBase_.translation_.x > 100.0f) {
-			worldTransformBase_.translation_.x = 100.0f;
+		if (worldTransformBase_.translation_.x > 50.0f) {
+			worldTransformBase_.translation_.x = 50.0f;
 		}
-		else if (worldTransformBase_.translation_.x < -100.0f) {
-			worldTransformBase_.translation_.x = -100.0f;
+		else if (worldTransformBase_.translation_.x < -50.0f) {
+			worldTransformBase_.translation_.x = -50.0f;
 		}
 		
-		if (worldTransformBase_.translation_.z > 100.0f) {
-			worldTransformBase_.translation_.z = 100.0f;
-		} else if (worldTransformBase_.translation_.z < -100.0f) {
-			worldTransformBase_.translation_.z = -100.0f;
+		if (worldTransformBase_.translation_.z > 50.0f) {
+			worldTransformBase_.translation_.z = 50.0f;
+		} 
+		else if (worldTransformBase_.translation_.z < -50.0f) {
+			worldTransformBase_.translation_.z = -50.0f;
 		}
 
 		// 回転
@@ -301,7 +330,7 @@ void Player::BehaviorRootUpdate() {
 			bulletColor_ = Type::C_RED;
 			burstTex_ = colorTex_[Type::C_RED];
 			playerTex_ = playerColorTex_[Type::C_RED];
-			audio_->PlayWave(changeColorSE_);
+			isPlaySE_ = true;
 		}
 
 		
@@ -314,7 +343,7 @@ void Player::BehaviorRootUpdate() {
 			bulletColor_ = Type::C_GREEN;
 			burstTex_ = colorTex_[Type::C_GREEN];
 			playerTex_ = playerColorTex_[Type::C_GREEN];
-			audio_->PlayWave(changeColorSE_);
+			isPlaySE_ = true;
 		}
 
 	}
@@ -326,7 +355,7 @@ void Player::BehaviorRootUpdate() {
 			bulletColor_ = Type::C_BLUE;
 			burstTex_ = colorTex_[Type::C_BLUE];
 			playerTex_ = playerColorTex_[Type::C_BLUE];
-			audio_->PlayWave(changeColorSE_);
+			isPlaySE_ = true;
 		}
 
 	}
@@ -340,6 +369,13 @@ void Player::BehaviorRootUpdate() {
 		BurstAttack();
 	}
 
+	if (isPlaySE_) {
+
+		audio_->PlayWave(changeColorSE_);
+		isPlaySE_ = false;
+
+	}
+
 	// 浮遊ギミック更新
 	UpdateFloatingGimmick();
 
@@ -348,11 +384,16 @@ void Player::BehaviorRootUpdate() {
 void Player::Reset() {
 
 	SetPosition(Vector3(0.0f, 1.0f, 0.0f));
+	worldTransformBase_.rotation_.y = 0.0f;
 	InitializeFloatingGimmick();
 	bullets_.remove_if([](Bullet* bullet) {
 		delete bullet;
 		return true;
 	});
+	SetColorType(Type::C_RED);
+	bulletColor_ = Type::C_RED;
+	burstTex_ = colorTex_[Type::C_RED];
+	playerTex_ = playerColorTex_[Type::C_RED];
 	burstCoolTimer_ = 0;
 	coolTimer_ = 0;
 	isInvincible_ = false;
@@ -435,6 +476,10 @@ void Player::BurstAttack() {
 
 		isBurst_ = true;
 
+		isEffect_ = true;
+
+		audio_->PlayWave(burstSE_);
+
 		burstCoolTimer_ = kBurstCoolTime;
 
 	}
@@ -444,6 +489,11 @@ void Player::BurstAttack() {
 void Player::OnCollision(Collider* collider) {
 
 	SetColorType(collider->GetColorType());
+
+	Score* score;
+	score = Score::GetInstance();
+
+	score->SubtractScore(300);
 
 	isInvincible_ = true;
 	invincibleTimer_ = kInvincibleTime;

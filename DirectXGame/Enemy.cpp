@@ -13,12 +13,16 @@ Enemy::~Enemy() {
 
 void Enemy::Initialize(const std::vector<Model*>& models) {
 
+	audio_ = Audio::GetInstance();
+
 	BaseCharacter::Initialize(models);
 
 	worldTransform_.Initialize();
 	worldTransform_.translation_.y = 1.0f;
 	worldTransformBody_.Initialize();
 	worldTransformBody_.translation_.z = 20.0f;
+	worldTransformBody_.scale_ = Vector3(0.0f, 0.0f, 0.0f);
+	worldTransformBody_.UpdateMatrix();
 
 	effect_ = std::make_unique<Effect>();
 	effect_->Initialize(30);
@@ -44,6 +48,24 @@ void Enemy::Initialize(const std::vector<Model*>& models) {
 	SetCollisionMask(0xfffffffd);
 	SetRadius(1.1f);
 
+	switch (GetColorType()) {
+	case C_RED:
+		attackTimer_ = kAttackTime / 3;
+		break;
+	case C_GREEN:
+		attackTimer_ = kAttackTime;
+		break;
+	case C_BLUE:
+		attackTimer_ = kAttackTime / 2;
+		break;
+	default:
+		attackTimer_ = kAttackTime;
+		break;
+	}
+
+	deadSE_ = audio_->LoadWave("audio/enemydead.mp3");
+	hitSE_ = audio_->LoadWave("audio/enemyhit.mp3");
+
 }
 
 void Enemy::Update() {
@@ -51,6 +73,22 @@ void Enemy::Update() {
 	if (isDead_) {
 
 		effect_->Update();
+
+	}
+	else if (isSpawnTime_) {
+
+		if (--spawnTimer_ > 0) {
+
+			float rad = 3.14f / 5.0f;
+
+			worldTransformBody_.rotation_.y += rad;
+
+			worldTransformBody_.scale_ += (Vector3(1.0f, 1.0f, 1.0f) /= 30);
+
+		}
+		else {
+			isSpawnTime_ = false;
+		}
 
 	}
 	else {
@@ -153,15 +191,25 @@ void Enemy::OnCollision(Collider* collider) {
 
 	if (--life_ <= 0) {
 
-		score->AddScore(100);
+		score->AddScore(100, score->GetMagScore());
 
 		StartEffect();
+
+		gameScene_->SetMagScoreTimer();
+
+		gameScene_->AddKillCount();
+
+		audio_->PlayWave(deadSE_);
+
+		score->SetMagScore(score->GetMagScore() + 0.05f);
 
 		isDead_ = true;
 	}
 	else {
 
 		score->AddScore(10);
+
+		audio_->PlayWave(hitSE_);
 
 		worldTransformBody_.scale_ *= 1.2f;
 		SetRadius(GetRadius() * 1.2f);
@@ -188,44 +236,93 @@ void Enemy::Attack() {
 	default:
 	case C_RED:
 
+		// 一定間隔毎に弾を発射
+		if (--attackTimer_ <= 0 && !isDead_) {
+
+			const float kBulletSpeed = 1.0f;
+
+			Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
+
+			velocity = TransformNormal(velocity, worldTransformBody_.matWorld_);
+
+			EnemyBullet* newBullet = new EnemyBullet();
+
+			newBullet->Initialize(worldTransformBody_.translation_, velocity);
+
+			gameScene_->AddEnemyBullet(newBullet);
+
+			// タイマーリセット
+			attackTimer_ = kAttackTime;
+		}
+
 		break;
 
 	case C_GREEN:
+
+		// 一定間隔毎に弾を発射
+		if (--attackTimer_ <= 0 && !isDead_) {
+
+			const float kBulletSpeed = 1.0f;
+
+			Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
+
+			velocity = TransformNormal(velocity, worldTransformBody_.matWorld_);
+
+			EnemyBullet* newBullet = new EnemyBullet();
+
+			newBullet->Initialize(worldTransformBody_.translation_, velocity);
+
+			gameScene_->AddEnemyBullet(newBullet);
+
+			// タイマーリセット
+			attackTimer_ = kAttackTime;
+		}
 
 		break;
 
 	case C_BLUE:
 
+		// 一定間隔毎に弾を発射
+		if (--attackTimer_ <= 0 && !isDead_) {
+
+			const float kBulletSpeed = 1.0f;
+
+			Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
+
+			velocity = TransformNormal(velocity, worldTransformBody_.matWorld_);
+
+			EnemyBullet* newBullet = new EnemyBullet();
+
+			newBullet->Initialize(worldTransformBody_.translation_, velocity);
+
+			gameScene_->AddEnemyBullet(newBullet);
+
+			// タイマーリセット
+			attackTimer_ = kAttackTime / 2;
+		}
+
 		break;
-	}
-
-	//一定間隔毎に弾を発射
-	if (--attackTimer_ <= 0 && !isDead_) {
-
-		const float kBulletSpeed = 1.0f;
-
-		Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
-
-		velocity = TransformNormal(velocity, worldTransformBody_.matWorld_);
-
-		EnemyBullet* newBullet = new EnemyBullet();
-
-		newBullet->Initialize(worldTransformBody_.translation_, velocity);
-
-		gameScene_->AddEnemyBullet(newBullet);
-
-		//タイマーリセット
-		attackTimer_ = kAttackTime;
-
 	}
 
 }
 
 void Enemy::Burst() {
 
+	Score* score;
+	score = Score::GetInstance();
+
+	score->AddScore(100, score->GetMagScore());
+
 	StartEffect();
 
+	gameScene_->AddKillCount();
+	gameScene_->SetMagScoreTimer();
+
+	audio_->PlayWave(deadSE_);
+
 	isDead_ = true;
+
+	score->SetMagScore(score->GetMagScore() * 1.2f);
 
 }
 

@@ -16,6 +16,8 @@ public:
 
 	const ViewProjection& GetViewProjection() { return viewProjection_; }
 
+	void Reset();
+
 private:
 
 	//ビュープロジェクション

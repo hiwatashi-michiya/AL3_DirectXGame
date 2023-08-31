@@ -5,6 +5,7 @@
 #include <WorldTransform.h>
 #include <ViewProjection.h>
 #include "Collider.h"
+#include <Audio.h>
 
 class EnemyBullet : public Collider {
 
@@ -36,6 +37,8 @@ class EnemyBullet : public Collider {
 
 private:
 
+	Audio* audio_ = nullptr;
+
 	// 弾モデル
 	std::unique_ptr<Model> modelBullet_ = nullptr;
 
@@ -48,5 +51,7 @@ private:
 	bool isDead_ = false;
 
 	int32_t deathTimer_ = kLifeTime;
+
+	uint32_t deadSE_ = 0u;
 
 };

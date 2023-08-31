@@ -19,10 +19,10 @@ void Score::Initialize() {
 		numSprite_[i].reset(Sprite::Create(numTex_, {0.0f, 0.0f}));
 		numSprite_[i]->SetSize({32.0f, 64.0f});
 		numSprite_[i]->SetTextureRect({0.0f, 0.0f}, {32.0f, 64.0f});
-		numSprite_[i]->SetPosition({i * 32.0f + 1046.0f, 10.0f});
+		numSprite_[i]->SetPosition({i * 32.0f + 1280 - kMaxDigits * 32.0f - 10.0f, 10.0f});
 	}
 	scoreSprite_.reset(Sprite::Create(scoreTex_, {0.0f, 0.0f}));
-	scoreSprite_->SetPosition({886.0f, 10.0f});
+	scoreSprite_->SetPosition({1280 - kMaxDigits * 32.0f - 10.0f - 160.0f, 10.0f});
 
 }
 
@@ -31,7 +31,7 @@ void Score::Update() {
 	if (GameTimer::GetInstance()->GetGameTime() <= 0) {
 		
 		for (int i = 0; i < kMaxDigits; i++) {
-			numSprite_[i]->SetPosition({i * 32.0f + 528.0f, 360.0f});
+			numSprite_[i]->SetPosition({i * 32.0f + 640.0f - (32.0f * float(kMaxDigits / 2)), 360.0f});
 		}
 
 		scoreSprite_->SetTextureRect({0.0f, 0.0f}, {135.0f, 64.0f});
@@ -41,11 +41,11 @@ void Score::Update() {
 	else {
 
 		for (int i = 0; i < kMaxDigits; i++) {
-			numSprite_[i]->SetPosition({i * 32.0f + 1046.0f, 10.0f});
+			numSprite_[i]->SetPosition({i * 32.0f + 1280 - kMaxDigits * 32.0f - 10.0f, 10.0f});
 		}
 
 		scoreSprite_->SetTextureRect({0.0f, 0.0f}, {160.0f, 64.0f});
-		scoreSprite_->SetPosition({886.0f, 10.0f});
+		scoreSprite_->SetPosition({1280 - kMaxDigits * 32.0f - 10.0f - 160.0f, 10.0f});
 
 	}
 

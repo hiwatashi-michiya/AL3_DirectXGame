@@ -47,3 +47,10 @@ void FollowCamera::Update() {
 	viewProjection_.UpdateMatrix();
 
 }
+
+void FollowCamera::Reset() {
+
+	viewProjection_.rotation_.x = 3.14f / 6.0f;
+	viewProjection_.rotation_.y = 0.0f;
+
+}

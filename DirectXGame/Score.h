@@ -4,7 +4,7 @@
 #include <memory>
 
 // 最大桁数
-const int kMaxDigits = 7;
+const int kMaxDigits = 8;
 
 class Score {
 public:
@@ -29,12 +29,17 @@ public:
 	/// </summary>
 	/// <param name="val">減算値</param>
 	/// <param name="mag">倍率</param>
-	void SubtractScore(int val, float mag = 1.0f) { currentScore_ -= int(val * mag); }
+	void SubtractScore(int val, float mag = 1.0f) { 
+		currentScore_ -= int(val * mag); 
+		currentScore_ = int(Clamp(float(currentScore_), 0.0f, 9999999.0f));
+	}
 
 	/// <summary>
-	/// 倍率のリセット
+	/// 倍率のセット
 	/// </summary>
-	void ResetMagScore() { magScore_ = 1.0f; }
+	void SetMagScore(float val) { magScore_ = val; }
+
+	float GetMagScore() { return magScore_; }
 
 	/// <summary>
 	/// スコアリセット

@@ -55,6 +55,8 @@ public:
 
 	void SetIsBurst(bool flag) { isBurst_ = flag; }
 
+	int32_t GetBurstCoolTimer() { return burstCoolTimer_; }
+
 	//無敵中かどうかのゲッター
 	bool GetIsInvincible() { return isInvincible_; }
 
@@ -74,7 +76,7 @@ private:
 	const int kModelIndexWeapon = 4;
 	const int kModelIndexArrow = 5;
 
-	const float kBurstRadius = 20.0f;
+	const float kBurstRadius = 40.0f;
 
 	//振る舞い
 	Behavior behavior_ = Behavior::kRoot;
@@ -117,6 +119,9 @@ private:
 	//攻撃
 	void Attack();
 
+	//音鳴らしフラグ
+	bool isPlaySE_ = false;
+
 	//クールタイム
 	const int32_t kCoolTime = 10;
 
@@ -124,7 +129,7 @@ private:
 	bool isBurst_ = false;
 
 	//バーストクールタイム
-	const int32_t kBurstCoolTime = 600;
+	const int32_t kBurstCoolTime = 300;
 
 	int32_t burstCoolTimer_ = 0;
 
@@ -148,6 +153,15 @@ private:
 
 	std::unique_ptr<Model> modelBurst_ = nullptr;
 
+	std::unique_ptr<Model> modelEffect_ = nullptr;
+
+	//エフェクトフラグ
+	bool isEffect_ = false;
+
+	const int32_t kMaxEffectTime = 10;
+
+	int32_t effectTimer_ = 0;
+
 	//ワールド変換データ
 	WorldTransform worldTransformBase_;
 	WorldTransform worldTransformBody_;
@@ -157,6 +171,7 @@ private:
 	WorldTransform worldTransformWeapon_;
 	WorldTransform worldTransformBurst_;
 	WorldTransform worldTransformArrow_;
+	WorldTransform worldTransformEffect_;
 
 	//カメラのビュープロジェクション
 	const ViewProjection* viewProjection_ = nullptr;
@@ -176,6 +191,7 @@ private:
 	uint32_t playerTex_ = 0u;
 
 	uint32_t changeColorSE_ = 0u;
+	uint32_t burstSE_ = 0u;
 
 };
 
