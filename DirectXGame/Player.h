@@ -71,10 +71,7 @@ private:
 
 	const int kModelIndexBody = 0;
 	const int kModelIndexHead = 1;
-	const int kModelIndexL_arm = 2;
-	const int kModelIndexR_arm = 3;
-	const int kModelIndexWeapon = 4;
-	const int kModelIndexArrow = 5;
+	const int kModelIndexArrow = 2;
 
 	const float kBurstRadius = 40.0f;
 

@@ -112,30 +112,6 @@ void Player::Initialize(const std::vector<Model*>& models) {
 
 void Player::Update() {
 
-//	#ifdef _DEBUG
-//
-//	ImGui::Begin("weapon");
-//	ImGui::DragFloat3("translation", &worldTransformWeapon_.translation_.x, 0.01f);
-//	ImGui::DragFloat3("rotation", &worldTransformWeapon_.rotation_.x, 0.01f);
-//	ImGui::End();
-//
-//	ImGui::Begin("Arm");
-//	ImGui::DragFloat3("L rotation", &worldTransformL_arm_.rotation_.x, 0.01f);
-//	ImGui::DragFloat3("R rotation", &worldTransformR_arm_.rotation_.x, 0.01f);
-//	ImGui::End();
-//
-//	ImGui::Begin("Player");
-//	ImGui::SliderFloat3("Head Translation", &worldTransformHead_.translation_.x, -100.0f, 100.0f);
-//	ImGui::SliderFloat3("ArmL Translation", &worldTransformL_arm_.translation_.x, -100.0f, 100.0f);
-//	ImGui::SliderFloat3("ArmR Translation", &worldTransformR_arm_.translation_.x, -100.0f, 100.0f);
-//	ImGui::SliderInt("cycle", &cycle, 10, 300);
-//	ImGui::SliderFloat("swing", &swing, 0.1f, 50.0f);
-//	ImGui::End();
-//
-//#endif // _DEBUG
-
-	/*ApplyGlobalVariables();*/
-
 	bullets_.remove_if([](Bullet* bullet) {
 		
 		if (bullet->IsDead()) {
@@ -241,10 +217,6 @@ void Player::Draw(const ViewProjection& viewProjection) {
 
 	if (isEffect_) {
 		modelEffect_->Draw(worldTransformEffect_, viewProjection, burstTex_);
-	}
-
-	if (behavior_ == Behavior::kAttack) {
-		models_[kModelIndexWeapon]->Draw(worldTransformWeapon_, viewProjection);
 	}
 	
 }

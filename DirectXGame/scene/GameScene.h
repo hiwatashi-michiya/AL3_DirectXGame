@@ -95,9 +95,6 @@ private: // メンバ変数
 	//自キャラモデル
 	std::unique_ptr<Model> modelFighterBody_;
 	std::unique_ptr<Model> modelFighterHead_;
-	std::unique_ptr<Model> modelFighterL_arm_;
-	std::unique_ptr<Model> modelFighterR_arm_;
-	std::unique_ptr<Model> modelWeapon_;
 	std::unique_ptr<Model> modelArrow_;
 
 	
