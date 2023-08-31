@@ -126,9 +126,6 @@ void GameScene::Update() {
 	case INGAME:
 		GamePlayUpdate();
 		break;
-	case RESULT:
-		ResultUpdate();
-		break;
 	}
 
 	
@@ -218,9 +215,6 @@ void GameScene::Draw() {
 		areaModel_->Draw(worldTransformArea_, viewProjection_, areaTex_);
 
 		break;
-	case RESULT:
-		
-		break;
 	}
 
 	// 3Dオブジェクト描画後処理
@@ -258,9 +252,6 @@ void GameScene::Draw() {
 		if (gameTimer_->GetGameTime() <= 0) {
 			spritePressIngame_->Draw();
 		}
-
-		break;
-	case RESULT:
 
 		break;
 	}
@@ -416,11 +407,6 @@ void GameScene::GamePlayUpdate() {
 
 	// 追従カメラの更新
 	followCamera_->Update();
-
-}
-
-//リザルト
-void GameScene::ResultUpdate() {
 
 }
 

@@ -493,7 +493,7 @@ void Player::OnCollision(Collider* collider) {
 	Score* score;
 	score = Score::GetInstance();
 
-	score->SubtractScore(300);
+	score->SubtractScore(500);
 
 	isInvincible_ = true;
 	invincibleTimer_ = kInvincibleTime;

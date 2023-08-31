@@ -22,7 +22,10 @@ public:
 	/// </summary>
 	/// <param name="val">加算値</param>
 	/// <param name="mag">倍率</param>
-	void AddScore(int val, float mag = 1.0f) { currentScore_ += int(val * mag); }
+	void AddScore(int val, float mag = 1.0f) { 
+		currentScore_ += int(val * mag); 
+		currentScore_ = int(Clamp(float(currentScore_), 0.0f, 99999999.0f));
+	}
 
 	/// <summary>
 	/// スコア減算
@@ -31,7 +34,7 @@ public:
 	/// <param name="mag">倍率</param>
 	void SubtractScore(int val, float mag = 1.0f) { 
 		currentScore_ -= int(val * mag); 
-		currentScore_ = int(Clamp(float(currentScore_), 0.0f, 9999999.0f));
+		currentScore_ = int(Clamp(float(currentScore_), 0.0f, 99999999.0f));
 	}
 
 	/// <summary>

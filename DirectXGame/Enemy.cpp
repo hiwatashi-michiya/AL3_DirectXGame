@@ -322,7 +322,7 @@ void Enemy::Burst() {
 
 	isDead_ = true;
 
-	score->SetMagScore(score->GetMagScore() * 1.2f);
+	score->SetMagScore(score->GetMagScore() * 1.1f);
 
 }
 
