@@ -36,6 +36,11 @@ public:
 	/// </summary>
 	void ResetMagScore() { magScore_ = 1.0f; }
 
+	/// <summary>
+	/// スコアリセット
+	/// </summary>
+	void ResetScore() { currentScore_ = 0; }
+
 private:
 
 	int currentScore_;
@@ -46,8 +51,10 @@ private:
 	float magScore_ = 1.0f;
 
 	uint32_t numTex_ = 0u;
+	uint32_t scoreTex_ = 0u;
 
 	std::unique_ptr<Sprite> numSprite_[kMaxDigits];
+	std::unique_ptr<Sprite> scoreSprite_;
 
 	//スコアの表示更新
 	void UpdateViewScore();

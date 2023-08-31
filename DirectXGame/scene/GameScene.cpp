@@ -27,6 +27,7 @@ void GameScene::Initialize() {
 	score_->Initialize();
 	//現在シーンの設定
 	currentScene_ = INGAME;
+	nextScene_ = INGAME;
 
 	viewProjection_.Initialize();
 	viewProjection_.translation_.y = 5.0f;
@@ -38,10 +39,11 @@ void GameScene::Initialize() {
 	modelFighterL_arm_.reset(Model::CreateFromOBJ("float_L_arm", true));
 	modelFighterR_arm_.reset(Model::CreateFromOBJ("float_R_arm", true));
 	modelWeapon_.reset(Model::CreateFromOBJ("weapon", true));
+	modelArrow_.reset(Model::CreateFromOBJ("arrow", true));
 	//自キャラモデル
 	std::vector<Model*> playerModels = {
 	    modelFighterBody_.get(), modelFighterHead_.get(), modelFighterL_arm_.get(),
-	    modelFighterR_arm_.get(), modelWeapon_.get()};
+	    modelFighterR_arm_.get(), modelWeapon_.get(), modelArrow_.get()};
 	player_ = std::make_unique<Player>();
 	// 自キャラの初期化
 	player_->Initialize(playerModels);
@@ -64,6 +66,10 @@ void GameScene::Initialize() {
 	worldTransformArea_.Initialize();
 	worldTransformArea_.scale_ *= 100.0f;
 	worldTransformArea_.UpdateMatrix();
+	//ゲームタイマー初期化
+	gameTimer_ = GameTimer::GetInstance();
+	gameTimer_->Initialize();
+	gameTimer_->ResetGameTime();
 
 	//デバッグカメラ初期化
 	debugCamera_.reset(new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight));
@@ -78,13 +84,16 @@ void GameScene::Initialize() {
 
 	collisionManager_ = std::make_unique<CollisionManager>();
 
-	AxisIndicator::GetInstance()->SetVisible(true);
-	AxisIndicator::GetInstance()->SetTargetViewProjection(&viewProjection_);
+	changeSceneTex_ = TextureManager::Load("UI/changescene.png");
+	spriteChangeScene_.reset(Sprite::Create(changeSceneTex_, {0.0f, 0.0f}));
+	spriteChangeScene_->SetSize({1280.0f, 720.0f});
 
 }
 
 void GameScene::Update() { 
 	
+	spriteChangeScene_->SetColor(Vector4(1.0f,1.0f,1.0f, 1.0f * float(changeSceneTimer_) / 60.0f));
+
 	switch (currentScene_) {
 	default:
 	case TITLE:
@@ -168,7 +177,6 @@ void GameScene::Draw() {
 	default:
 	case TITLE:
 
-		break;
 	case INGAME:
 		
 		skydome_->Draw(viewProjection_);
@@ -211,12 +219,19 @@ void GameScene::Draw() {
 	case INGAME:
 
 		score_->Draw();
-		
+		gameTimer_->Draw();
+
+		if (gameTimer_->GetGameTime() <= 0) {
+
+		}
+
 		break;
 	case RESULT:
 
 		break;
 	}
+
+	spriteChangeScene_->Draw();
 
 	// スプライト描画後処理
 	Sprite::PostDraw();
@@ -227,57 +242,133 @@ void GameScene::Draw() {
 //タイトル
 void GameScene::TitleUpdate() {
 
+	if (isReset_) {
+		isReset_ = false;
+	}
+
+	if (isChangeScene_ && nextScene_ == INGAME) {
+
+		if (++changeSceneTimer_ >= 60) {
+
+			player_->Reset();
+			currentScene_ = nextScene_;
+			gameTimer_->SetIsCount(true);
+
+		}
+
+	}
+	else if (isChangeScene_ && nextScene_ == TITLE) {
+
+		if (--changeSceneTimer_ <= 0) {
+			isChangeScene_ = false;
+		}
+
+	}
+
+	player_->Update();
+
+	XINPUT_STATE joyState;
+
+	if (Input::GetInstance()->GetJoystickState(0, joyState)) {
+
+		if (((joyState.Gamepad.wButtons & XINPUT_GAMEPAD_A &&
+		     joyState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) ||
+		    input_->TriggerKey(DIK_SPACE)) && isChangeScene_ == false) {
+
+			isChangeScene_ = true;
+			nextScene_ = INGAME;
+		}
+	}
+
+	// 追従カメラの更新
+	followCamera_->Update();
+
 }
 
 //インゲーム
 void GameScene::GamePlayUpdate() {
 
-	if (gamePlayTimer_ >= 0) {
+	if (gameTimer_->GetIsCount() == false) {
+
+		XINPUT_STATE joyState;
+
+		if (Input::GetInstance()->GetJoystickState(0, joyState)) {
+
+			if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_A && isReset_ == false) {
+
+				isReset_ = true;
+				isChangeScene_ = true;
+				nextScene_ = TITLE;
+
+			}
+
+		}
+
+	}
+
+	if (isChangeScene_ && nextScene_ == TITLE) {
+
+		if (++changeSceneTimer_ >= 60) {
+			Reset();
+			currentScene_ = nextScene_;
+		}
+
+	}
+	else if (isChangeScene_ && nextScene_ == INGAME) {
+
+		if (--changeSceneTimer_ <= 0) {
+			isChangeScene_ = false;
+		}
+
+	}
+	else if (isReset_ == false) {
+
+		gameTimer_->Update();
 
 		UpdateEnemyPopCommands();
 
+	
+
+	}
+
 		enemyBullets_.remove_if([](EnemyBullet* bullet) {
-			if (bullet->IsDead()) {
-				delete bullet;
-				return true;
-			}
-
-			return false;
-		});
-
-		enemies_.remove_if([](Enemy* enemy) {
-			if (enemy->IsDead() && enemy->IsDeadEffect()) {
-
-				delete enemy;
-				return true;
-			}
-
-			return false;
-		});
-
-		player_->Update();
-
-		for (Enemy* enemy : enemies_) {
-			enemy->Update();
+		if (bullet->IsDead()) {
+			delete bullet;
+			return true;
 		}
 
-		for (EnemyBullet* bullet : enemyBullets_) {
-			bullet->Update();
+		return false;
+	});
+
+	enemies_.remove_if([](Enemy* enemy) {
+		if (enemy->IsDead() && enemy->IsDeadEffect()) {
+
+			delete enemy;
+			return true;
 		}
+
+		return false;
+	});
+
+	player_->Update();
+
+	for (Enemy* enemy : enemies_) {
+		enemy->Update();
+	}
+
+	for (EnemyBullet* bullet : enemyBullets_) {
+		bullet->Update();
+	}
+
+	if (gameTimer_->GetGameTime() > 0) {
 
 		UpdateCollisionManager();
-
-		score_->Update();
-
-		// 追従カメラの更新
-		followCamera_->Update();
-
-	}
-	else {
-
 	}
 
-	
+	score_->Update();
+
+	// 追従カメラの更新
+	followCamera_->Update();
 
 }
 
@@ -344,6 +435,8 @@ void GameScene::AddEnemyBullet(EnemyBullet* enemyBullet) {
 }
 
 void GameScene::LoadEnemyPopData() {
+
+	enemyPopCommands.clear();
 
 	// ファイルを開く
 	std::ifstream file;
@@ -444,4 +537,26 @@ void GameScene::UpdateEnemyPopCommands() {
 			break;
 		}
 	}
+}
+
+void GameScene::Reset() {
+
+	LoadEnemyPopData();
+
+	enemyBullets_.remove_if([](EnemyBullet* bullet) {
+		delete bullet;
+		return true;
+	});
+
+	enemies_.remove_if([](Enemy* enemy) {
+		delete enemy;
+		return true;
+	});
+
+	score_->ResetScore();
+
+	player_->Reset();
+
+	gameTimer_->ResetGameTime();
+
 }

@@ -22,6 +22,7 @@
 #include <sstream>
 #include "Score.h"
 #include "Effect.h"
+#include "GameTimer.h"
 
 enum Scene {
 	TITLE,
@@ -91,6 +92,7 @@ private: // メンバ変数
 	std::unique_ptr<Model> modelFighterL_arm_;
 	std::unique_ptr<Model> modelFighterR_arm_;
 	std::unique_ptr<Model> modelWeapon_;
+	std::unique_ptr<Model> modelArrow_;
 
 	
 	//敵キャラモデル
@@ -140,9 +142,7 @@ private: // メンバ変数
 	uint32_t waitTimer = 0;
 
 	//ゲーム中の制限時間
-	const int32_t kGamePlayTime = 3600;
-
-	int32_t gamePlayTimer_ = kGamePlayTime;
+	GameTimer* gameTimer_ = nullptr;
 
 	// 弾リストを取得
 	const std::list<EnemyBullet*>& GetEnemyBullets() { return enemyBullets_; }
@@ -172,11 +172,30 @@ private: // メンバ変数
 	/// </summary>
 	void ResultUpdate();
 
+	/// <summary>
+	/// ゲームリセット
+	/// </summary>
+	void Reset();
+	
+	//リセットフラグ
+	bool isReset_ = false;
+
+	//画面切り替えの時間
+	const int32_t kChangeSceneTimer = 60;
+
+	int32_t changeSceneTimer_ = 0;
+
+	uint32_t changeSceneTex_ = 0u;
+	std::unique_ptr<Sprite> spriteChangeScene_ = nullptr;
+
+	bool isChangeScene_ = false;
+
 	// 敵発生コマンド
 	std::stringstream enemyPopCommands;
-
+	
 	//ゲームシーン切り替え
 	Scene currentScene_;
-	
+	Scene nextScene_;
+
 };
 

@@ -58,6 +58,10 @@ public:
 	//無敵中かどうかのゲッター
 	bool GetIsInvincible() { return isInvincible_; }
 
+	void SetPosition(const Vector3& position) { worldTransformBase_.translation_ = position; }
+
+	void Reset();
+
 private:
 
 	Input* input_ = nullptr;
@@ -68,6 +72,7 @@ private:
 	const int kModelIndexL_arm = 2;
 	const int kModelIndexR_arm = 3;
 	const int kModelIndexWeapon = 4;
+	const int kModelIndexArrow = 5;
 
 	const float kBurstRadius = 20.0f;
 
@@ -151,6 +156,7 @@ private:
 	WorldTransform worldTransformR_arm_;
 	WorldTransform worldTransformWeapon_;
 	WorldTransform worldTransformBurst_;
+	WorldTransform worldTransformArrow_;
 
 	//カメラのビュープロジェクション
 	const ViewProjection* viewProjection_ = nullptr;

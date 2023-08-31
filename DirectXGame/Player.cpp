@@ -69,6 +69,12 @@ void Player::Initialize(const std::vector<Model*>& models) {
 	worldTransformBurst_.scale_ *= kBurstRadius;
 	worldTransformBurst_.UpdateMatrix();
 
+	//方向
+	worldTransformArrow_.Initialize();
+	worldTransformArrow_.parent_ = &worldTransformBase_;
+	worldTransformArrow_.translation_.z = 2.0f;
+	worldTransformArrow_.UpdateMatrix();
+
 	//globalVariables->AddItem(groupName, "Head Translation", worldTransformHead_.translation_);
 	//globalVariables->AddItem(groupName, "ArmL Translation", worldTransformL_arm_.translation_);
 	//globalVariables->AddItem(groupName, "ArmR Translation", worldTransformR_arm_.translation_);
@@ -184,6 +190,7 @@ void Player::Update() {
 	worldTransformR_arm_.UpdateMatrix();
 	worldTransformWeapon_.UpdateMatrix();
 	worldTransformBurst_.UpdateMatrix();
+	worldTransformArrow_.UpdateMatrix();
 
 }
 
@@ -194,6 +201,9 @@ void Player::Draw(const ViewProjection& viewProjection) {
 		models_[kModelIndexBody]->Draw(worldTransformBody_, viewProjection, playerTex_);
 		models_[kModelIndexHead]->Draw(worldTransformHead_, viewProjection, playerTex_);
 	}
+
+	models_[kModelIndexArrow]->Draw(worldTransformArrow_, viewProjection, playerTex_);
+
 	/*models_[kModelIndexL_arm]->Draw(worldTransformL_arm_, viewProjection);
 	models_[kModelIndexR_arm]->Draw(worldTransformR_arm_, viewProjection);*/
 	
@@ -332,6 +342,21 @@ void Player::BehaviorRootUpdate() {
 
 	// 浮遊ギミック更新
 	UpdateFloatingGimmick();
+
+}
+
+void Player::Reset() {
+
+	SetPosition(Vector3(0.0f, 1.0f, 0.0f));
+	InitializeFloatingGimmick();
+	bullets_.remove_if([](Bullet* bullet) {
+		delete bullet;
+		return true;
+	});
+	burstCoolTimer_ = 0;
+	coolTimer_ = 0;
+	isInvincible_ = false;
+	invincibleTimer_ = 0;
 
 }
 
