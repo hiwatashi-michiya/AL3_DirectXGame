@@ -11,9 +11,9 @@ void Effect::Initialize(int32_t lifeTime) {
 
 	lifeTimer_ = lifeTime;
 
-	colorTex_[kColorRed] = TextureManager::Load("particleball/enemy_red.png");
-	colorTex_[kColorGreen] = TextureManager::Load("particleball/enemy_green.png");
-	colorTex_[kColorBlue] = TextureManager::Load("particleball/enemy_blue.png");
+	colorTex_[kColorRed] = TextureManager::Load("particlecube/enemy_red.png");
+	colorTex_[kColorGreen] = TextureManager::Load("particlecube/enemy_green.png");
+	colorTex_[kColorBlue] = TextureManager::Load("particlecube/enemy_blue.png");
 
 	effectTex_ = colorTex_[kColorRed];
 
